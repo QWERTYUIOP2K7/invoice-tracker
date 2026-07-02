@@ -6,16 +6,15 @@ const upload = require('../middleware/upload');
 
 const router = express.Router({ mergeParams: true });
 
-// All routes require authentication
 router.use(protect);
 
-// Upload PDF (Finance/Admin only)
+// Upload PDF to existing invoice
 router.post('/:id/upload-pdf', authorize('UPLOAD_PDF'), upload.single('file'), uploadPDF);
 
-// Download PDF (all authenticated users, scoped by client)
+// Download PDF
 router.get('/:id/download-pdf', downloadPDF);
 
-// View PDF in browser (all authenticated users, scoped by client)
+// View PDF
 router.get('/:id/view-pdf', viewPDF);
 
 module.exports = router;

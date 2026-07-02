@@ -3,19 +3,28 @@ const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const { recordHistory } = require('../services/historyService');
 const { validateStatusTransition, validatePendingReason } = require('../services/invoiceWorkflow');
+const { generateInvoiceNumber } = require('../services/invoiceNumberService');
 const { ROLES } = require('../config/permissions');
 
 // @route   POST /api/invoices
 // @access  Private/Finance/Admin
 // @desc    Create a new invoice
 exports.createInvoice = asyncHandler(async (req, res) => {
-  const { clientId, invoiceNumber, invoiceMonth, amount, invoiceDate, dueDate, remarks } = req.body;
+  const { clientId, invoicePrefix, invoiceMonth, billingMonth, amount, invoiceDate, dueDate, poNumber, paymentTerms, deliveryNoteNumber, lineItems } = req.body;
 
-  // Validate input
-  if (!clientId || !invoiceNumber || !invoiceMonth || !amount || !invoiceDate || !dueDate) {
+  // Validate required fields
+  if (!clientId || !invoicePrefix || !invoiceDate || !dueDate) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide all required fields: clientId, invoiceNumber, invoiceMonth, amount, invoiceDate, dueDate',
+      message: 'Please provide required fields: clientId, invoicePrefix, invoiceDate, dueDate',
+    });
+  }
+
+  // Either provide amount OR lineItems
+  if (!amount && (!lineItems || lineItems.length === 0)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide either amount or lineItems array',
     });
   }
 
@@ -28,25 +37,44 @@ exports.createInvoice = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check for duplicate invoice number
-  const existingInvoice = await Invoice.findOne({ invoiceNumber });
-  if (existingInvoice) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invoice number already exists',
+  // Auto-generate invoice number
+  const invoiceNumber = await generateInvoiceNumber(invoicePrefix, clientId);
+
+  // Calculate total amount from lineItems if provided
+  let totalAmount = amount;
+  let processedLineItems = [];
+
+  if (lineItems && lineItems.length > 0) {
+    totalAmount = 0;
+    processedLineItems = lineItems.map((item) => {
+      const itemAmount = item.amount || item.quantity * item.ratePerUnit * (1 - (item.discountPercent || 0) / 100);
+      totalAmount += itemAmount;
+      return {
+        description: item.description,
+        hsnSacCode: item.hsnSacCode,
+        quantity: item.quantity,
+        ratePerUnit: item.ratePerUnit,
+        discountPercent: item.discountPercent || 0,
+        amount: itemAmount,
+      };
     });
   }
 
   // Create invoice
   const invoice = await Invoice.create({
-    clientId,
     invoiceNumber,
+    invoicePrefix,
+    clientId,
     invoiceMonth,
-    amount,
+    billingMonth,
+    amount: totalAmount,
     invoiceDate: new Date(invoiceDate),
     dueDate: new Date(dueDate),
+    poNumber,
+    paymentTerms,
+    deliveryNoteNumber,
+    lineItems: processedLineItems,
     status: 'Draft',
-    remarks,
     createdBy: req.user.id,
   });
 
@@ -55,6 +83,7 @@ exports.createInvoice = asyncHandler(async (req, res) => {
 
   // Update client invoice count
   client.invoiceCount += 1;
+  client.outstandingAmount += totalAmount;
   await client.save();
 
   res.status(201).json({
@@ -68,7 +97,7 @@ exports.createInvoice = asyncHandler(async (req, res) => {
 // @access  Private
 // @desc    Get invoices (scoped by client for non-admin users)
 exports.getInvoices = asyncHandler(async (req, res) => {
-  const { status, clientId, invoiceMonth, search } = req.query;
+  const { status, clientId, invoiceMonth, billingMonth, search } = req.query;
 
   // Build query
   let query = {};
@@ -89,12 +118,16 @@ exports.getInvoices = asyncHandler(async (req, res) => {
     query.invoiceMonth = invoiceMonth;
   }
 
+  if (billingMonth) {
+    query.billingMonth = billingMonth;
+  }
+
   if (search) {
     query.invoiceNumber = { $regex: search, $options: 'i' };
   }
 
   const invoices = await Invoice.find(query)
-    .populate('clientId', 'companyName')
+    .populate('clientId', 'companyName gstin')
     .populate('createdBy', 'name email')
     .sort({ createdAt: -1 });
 
@@ -110,7 +143,7 @@ exports.getInvoices = asyncHandler(async (req, res) => {
 // @desc    Get single invoice
 exports.getInvoice = asyncHandler(async (req, res) => {
   const invoice = await Invoice.findById(req.params.id)
-    .populate('clientId', 'companyName contactEmail location')
+    .populate('clientId', 'companyName contactEmail contactPhone gstin address location')
     .populate('createdBy', 'name email');
 
   if (!invoice) {
@@ -155,12 +188,17 @@ exports.updateInvoice = asyncHandler(async (req, res) => {
     });
   }
 
-  const { invoiceMonth, amount, dueDate, remarks } = req.body;
+  const { invoiceMonth, billingMonth, amount, dueDate, poNumber, paymentTerms, deliveryNoteNumber, lineItems } = req.body;
 
   // Track changes in history
   if (invoiceMonth && invoiceMonth !== invoice.invoiceMonth) {
     await recordHistory(invoice._id, 'updated', req.user.id, 'invoiceMonth', invoice.invoiceMonth, invoiceMonth);
     invoice.invoiceMonth = invoiceMonth;
+  }
+
+  if (billingMonth && billingMonth !== invoice.billingMonth) {
+    await recordHistory(invoice._id, 'updated', req.user.id, 'billingMonth', invoice.billingMonth, billingMonth);
+    invoice.billingMonth = billingMonth;
   }
 
   if (amount && amount !== invoice.amount) {
@@ -173,9 +211,38 @@ exports.updateInvoice = asyncHandler(async (req, res) => {
     invoice.dueDate = new Date(dueDate);
   }
 
-  if (remarks !== undefined && remarks !== invoice.remarks) {
-    await recordHistory(invoice._id, 'updated', req.user.id, 'remarks', invoice.remarks, remarks);
-    invoice.remarks = remarks;
+  if (poNumber !== undefined && poNumber !== invoice.poNumber) {
+    await recordHistory(invoice._id, 'updated', req.user.id, 'poNumber', invoice.poNumber, poNumber);
+    invoice.poNumber = poNumber;
+  }
+
+  if (paymentTerms !== undefined && paymentTerms !== invoice.paymentTerms) {
+    await recordHistory(invoice._id, 'updated', req.user.id, 'paymentTerms', invoice.paymentTerms, paymentTerms);
+    invoice.paymentTerms = paymentTerms;
+  }
+
+  if (deliveryNoteNumber !== undefined && deliveryNoteNumber !== invoice.deliveryNoteNumber) {
+    await recordHistory(invoice._id, 'updated', req.user.id, 'deliveryNoteNumber', invoice.deliveryNoteNumber, deliveryNoteNumber);
+    invoice.deliveryNoteNumber = deliveryNoteNumber;
+  }
+
+  if (lineItems && lineItems.length > 0) {
+    let totalAmount = 0;
+    const processedLineItems = lineItems.map((item) => {
+      const itemAmount = item.amount || item.quantity * item.ratePerUnit * (1 - (item.discountPercent || 0) / 100);
+      totalAmount += itemAmount;
+      return {
+        description: item.description,
+        hsnSacCode: item.hsnSacCode,
+        quantity: item.quantity,
+        ratePerUnit: item.ratePerUnit,
+        discountPercent: item.discountPercent || 0,
+        amount: itemAmount,
+      };
+    });
+    await recordHistory(invoice._id, 'updated', req.user.id, 'lineItems', invoice.lineItems, processedLineItems);
+    invoice.lineItems = processedLineItems;
+    invoice.amount = totalAmount;
   }
 
   await invoice.save();
@@ -251,6 +318,16 @@ exports.updateInvoiceStatus = asyncHandler(async (req, res) => {
 
   const oldStatus = invoice.status;
   invoice.status = status;
+
+  // Update outstanding amount on client if status is Paid
+  if (status === 'Paid') {
+    const client = await Client.findById(invoice.clientId);
+    if (client) {
+      client.outstandingAmount = Math.max(0, client.outstandingAmount - invoice.amount);
+      await client.save();
+    }
+  }
+
   await invoice.save();
 
   // Record status change in history
@@ -294,10 +371,11 @@ exports.deleteInvoice = asyncHandler(async (req, res) => {
 
   await Invoice.findByIdAndDelete(req.params.id);
 
-  // Update client invoice count
+  // Update client invoice count and outstanding amount
   const client = await Client.findById(invoice.clientId);
   if (client) {
-    client.invoiceCount -= 1;
+    client.invoiceCount = Math.max(0, client.invoiceCount - 1);
+    client.outstandingAmount = Math.max(0, client.outstandingAmount - invoice.amount);
     await client.save();
   }
 

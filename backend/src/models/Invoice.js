@@ -1,5 +1,40 @@
 const mongoose = require('mongoose');
 
+const lineItemSchema = new mongoose.Schema(
+  {
+    description: {
+      type: String,
+      required: [true, 'Please provide line item description'],
+    },
+    hsnSacCode: {
+      type: String,
+      // HSN/SAC code for tax classification
+    },
+    quantity: {
+      type: Number,
+      required: [true, 'Please provide quantity'],
+      min: 0,
+    },
+    ratePerUnit: {
+      type: Number,
+      required: [true, 'Please provide rate per unit'],
+      min: 0,
+    },
+    discountPercent: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+    amount: {
+      type: Number,
+      required: [true, 'Please provide line item amount'],
+      min: 0,
+    },
+  },
+  { _id: true }
+);
+
 const invoiceSchema = new mongoose.Schema(
   {
     invoiceNumber: {
@@ -7,6 +42,11 @@ const invoiceSchema = new mongoose.Schema(
       required: [true, 'Please provide an invoice number'],
       unique: true,
       trim: true,
+    },
+    invoicePrefix: {
+      type: String,
+      required: [true, 'Please provide invoice prefix'],
+      // e.g., "INV", "EsolG", "INVOICE"
     },
     clientId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,13 +56,11 @@ const invoiceSchema = new mongoose.Schema(
     },
     invoiceMonth: {
       type: String,
-      required: [true, 'Please specify invoice month'],
-      // Format: YYYY-MM
+      // Format: YYYY-MM, optional if different from invoice date
     },
-    amount: {
-      type: Number,
-      required: [true, 'Please provide invoice amount'],
-      min: [0, 'Amount cannot be negative'],
+    billingMonth: {
+      type: String,
+      // Format: YYYY-MM, the month for which service was provided
     },
     invoiceDate: {
       type: Date,
@@ -32,6 +70,29 @@ const invoiceSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Please provide due date'],
     },
+    poNumber: {
+      type: String,
+      // Purchase Order number
+    },
+    paymentTerms: {
+      type: Number,
+      // Payment terms in days (e.g., 30)
+    },
+    deliveryNoteNumber: {
+      type: String,
+      // Delivery note reference
+    },
+    
+    // Line items (flexible - can use this OR direct amount)
+    lineItems: [lineItemSchema],
+    
+    // Total amount (calculated from lineItems or entered directly)
+    amount: {
+      type: Number,
+      required: [true, 'Please provide invoice amount'],
+      min: [0, 'Amount cannot be negative'],
+    },
+
     status: {
       type: String,
       enum: ['Draft', 'Generated', 'Approved', 'Sent', 'Paid', 'Pending', 'Overdue'],
@@ -50,11 +111,8 @@ const invoiceSchema = new mongoose.Schema(
       // Only required if status is Pending
     },
     pdfUrl: {
-      type: String, // Path or URL to the PDF file
-    },
-    remarks: {
       type: String,
-      trim: true,
+      // Path or URL to the PDF file
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

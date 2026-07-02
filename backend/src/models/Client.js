@@ -10,13 +10,36 @@ const clientSchema = new mongoose.Schema(
     },
     contactEmail: {
       type: String,
-      required: [true, 'Please provide a contact email'],
       lowercase: true,
       match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email'],
+      // No longer required
+    },
+    contactPhone: {
+      type: String,
+      // Optional
     },
     location: {
       type: String,
       required: [true, 'Please provide a location'],
+      trim: true,
+    },
+    address: {
+      type: String,
+      // Optional - full address
+    },
+    gstin: {
+      type: String,
+      // GST Identification Number
+      trim: true,
+    },
+    panNumber: {
+      type: String,
+      // PAN for Indian tax compliance
+      trim: true,
+    },
+    stateCode: {
+      type: String,
+      // State code for GST (e.g., "09" for UP)
       trim: true,
     },
     status: {
@@ -42,5 +65,6 @@ const clientSchema = new mongoose.Schema(
 
 clientSchema.index({ companyName: 1 });
 clientSchema.index({ status: 1 });
+clientSchema.index({ gstin: 1 });
 
 module.exports = mongoose.model('Client', clientSchema);
