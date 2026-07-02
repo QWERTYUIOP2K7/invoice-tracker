@@ -1,0 +1,26 @@
+const ROLES = {
+  ADMIN: 'admin',
+  FINANCE: 'finance',
+  CLIENT: 'client',
+};
+
+const PERMISSIONS = {
+  MANAGE_CLIENTS: [ROLES.ADMIN],
+  MANAGE_USERS: [ROLES.ADMIN],
+  VIEW_ALL_INVOICES: [ROLES.ADMIN],
+  CREATE_INVOICE: [ROLES.ADMIN, ROLES.FINANCE],
+  UPDATE_INVOICE: [ROLES.ADMIN, ROLES.FINANCE],
+  UPDATE_INVOICE_STATUS: [ROLES.ADMIN, ROLES.FINANCE],
+  UPLOAD_PDF: [ROLES.ADMIN, ROLES.FINANCE],
+  VIEW_INVOICE: [ROLES.ADMIN, ROLES.FINANCE, ROLES.CLIENT],
+  ADD_REMARK: [ROLES.ADMIN, ROLES.FINANCE, ROLES.CLIENT],
+  VIEW_HISTORY: [ROLES.ADMIN, ROLES.FINANCE, ROLES.CLIENT],
+};
+
+const hasPermission = (role, permission) => {
+  const allowedRoles = PERMISSIONS[permission];
+  if (!allowedRoles) return false;
+  return allowedRoles.includes(role);
+};
+
+module.exports = { ROLES, PERMISSIONS, hasPermission };
