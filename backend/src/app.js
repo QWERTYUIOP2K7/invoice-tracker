@@ -21,10 +21,10 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/invoices', require('./routes/invoiceRoutes'));
 app.use('/api/pdfs', require('./routes/pdfRoutes'));
-// More routes will be mounted here in future phases:
-// app.use('/api/users', require('./routes/userRoutes'));
-// app.use('/api/remarks', require('./routes/remarkRoutes'));
+// NEW - Dashboard routes (will create next)
 // app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+// NEW - User management routes (will create next)
+// app.use('/api/users', require('./routes/userRoutes'));
 
 app.use(notFound);
 app.use(errorHandler);

@@ -12,15 +12,16 @@ const { authorize } = require('../middleware/rbac');
 
 const router = express.Router();
 
-// All client routes require authentication and admin role
+// All routes require authentication
 router.use(protect);
-router.use(authorize('MANAGE_CLIENTS'));
 
-router.post('/', createClient);
-router.get('/', getAllClients);
-router.get('/:id', getClient);
-router.get('/:id/stats', getClientStats);
-router.put('/:id', updateClient);
-router.delete('/:id', deleteClient);
+// Individual route authorization
+router.post('/', authorize('MANAGE_CLIENTS'), createClient);
+router.get('/', authorize('MANAGE_CLIENTS'), getAllClients);
+router.get('/:id', authorize('MANAGE_CLIENTS'), getClient);
+router.get('/', authorize('VIEW_ALL_CLIENTS'), getAllClients);
+router.get('/:id/stats', authorize('MANAGE_CLIENTS'), getClientStats);
+router.put('/:id', authorize('MANAGE_CLIENTS'), updateClient);
+router.delete('/:id', authorize('MANAGE_CLIENTS'), deleteClient);
 
 module.exports = router;

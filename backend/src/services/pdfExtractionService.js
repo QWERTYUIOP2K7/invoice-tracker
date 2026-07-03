@@ -112,7 +112,7 @@ const extractPONumber = (text) => {
 
 const parseDate = (dateStr) => {
   if (!dateStr) return null;
-  
+
   const formats = [
     {
       regex: /^(\d{1,2})-(\w{3})-(\d{2})$/,

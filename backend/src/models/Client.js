@@ -2,21 +2,26 @@ const mongoose = require('mongoose');
 
 const clientSchema = new mongoose.Schema(
   {
+    clientCode: {
+      type: String,
+      unique: true,
+      required: [true, 'Client code is required'],
+      trim: true,
+      // Format: CL001, CL002, etc.
+    },
     companyName: {
       type: String,
       required: [true, 'Please provide a company name'],
-      unique: true,
       trim: true,
+      // No longer unique - multiple clients can have same company name
     },
     contactEmail: {
       type: String,
       lowercase: true,
       match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email'],
-      // No longer required
     },
     contactPhone: {
       type: String,
-      // Optional
     },
     location: {
       type: String,
@@ -25,21 +30,17 @@ const clientSchema = new mongoose.Schema(
     },
     address: {
       type: String,
-      // Optional - full address
     },
     gstin: {
       type: String,
-      // GST Identification Number
       trim: true,
     },
     panNumber: {
       type: String,
-      // PAN for Indian tax compliance
       trim: true,
     },
     stateCode: {
       type: String,
-      // State code for GST (e.g., "09" for UP)
       trim: true,
     },
     status: {
@@ -63,6 +64,7 @@ const clientSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+clientSchema.index({ clientCode: 1 });
 clientSchema.index({ companyName: 1 });
 clientSchema.index({ status: 1 });
 clientSchema.index({ gstin: 1 });
