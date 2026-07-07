@@ -20,17 +20,30 @@ exports.register = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'Please provide all required fields' });
   }
 
+  // SECURITY: Only allow registering as 'client' or 'finance' role
+  // Admin users must be created by system admin only via separate endpoint
+  if (role !== 'client' && role !== 'finance') {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Invalid role. Contact system administrator to create admin accounts.' 
+    });
+  }
+
+  // Finance users must have a clientId
+  if (role === 'finance' && !clientId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Finance users must be assigned to a client',
+    });
+  }
+
   // Check if user already exists
   let user = await User.findOne({ email });
   if (user) {
     return res.status(400).json({ success: false, message: 'Email already in use' });
   }
 
-  // Validate clientId if not admin
-  if (role !== 'admin' && !clientId) {
-    return res.status(400).json({ success: false, message: 'clientId required for non-admin users' });
-  }
-
+  // Verify client exists if clientId provided
   if (clientId) {
     const client = await Client.findById(clientId);
     if (!client) {
