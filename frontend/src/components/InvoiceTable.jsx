@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FiDownload, FiEye, FiSearch } from 'react-icons/fi';
-import { formatCurrency } from 'C:/Users/PAWNI/OneDrive/Desktop/invoice-tracker/frontend/src/utils/currency.js';
+import { formatCurrency } from '../utils/currency';
 export default function InvoiceTable({ invoices, selectedInvoice, onSelectInvoice, onDownloadPDF }) {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
