@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import InvoiceDetail from './pages/invoice/InvoiceDetail';
 import EditInvoice from './pages/invoice/EditInvoice';
 import ClientManagement from './pages/finance/ClientManagement';
+import RemarksCenter from './pages/finance/RemarksCenter';
+import UserManagement from './pages/admin/UserManagement';
 
 
 export default function App() {
@@ -47,12 +49,28 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/finance/communication"
+          element={
+            <ProtectedRoute requiredRole="finance">
+              <RemarksCenter />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/dashboard"
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <UserManagement />
             </ProtectedRoute>
           }
         />

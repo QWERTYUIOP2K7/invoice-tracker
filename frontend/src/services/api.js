@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { store } from '../store/store';
-import { logout } from '../store/authSlice';
+import { logout, setDeactivated } from '../store/authSlice';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -26,11 +26,20 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      store.dispatch(logout());
+      const message = error.response?.data?.message || '';
+
+      // Check if account was deactivated
+      if (message.includes('deactivated')) {
+        store.dispatch(setDeactivated());
+      } else {
+        store.dispatch(logout());
+      }
     }
     return Promise.reject(error);
   }
 );
+
+// ... rest of API exports
 
 // Auth endpoints
 export const authAPI = {
@@ -53,7 +62,16 @@ export const dashboardAPI = {
   getFinanceWorkQueue: () => api.get('/dashboard/finance/work-queue'),
   getClientDashboard: () => api.get('/dashboard/client'),
   getClientInvoices: (params) => api.get('/dashboard/client/invoices', { params }),
-}; 
+};
+
+export const userAPI = {
+  getUsers: (params) => api.get('/users', { params }),
+  getUser: (id) => api.get(`/users/${id}`),
+  createUser: (data) => api.post('/users', data),
+  updateUser: (id, data) => api.put(`/users/${id}`, data),
+  resetPassword: (id, password) => api.put(`/users/${id}/reset-password`, { password }),
+  deleteUser: (id) => api.delete(`/users/${id}`),
+};
 
 // Client endpoints
 export const clientAPI = {
@@ -97,7 +115,7 @@ http://localhost:5000/api/invoices
 
 POST
 
-	http://localhost:5000/api/invoices
+  http://localhost:5000/api/invoices
 
 Status
 
@@ -119,98 +137,98 @@ DNS ResolutionSystem
 
     Access-Control-Allow-Origin
 
-    	*
+      *
 
     Connection
 
-    	keep-alive
+      keep-alive
 
     Content-Length
 
-    	1557
+      1557
 
     Content-Type
 
-    	application/json; charset=utf-8
+      application/json; charset=utf-8
 
     Date
 
-    	Mon, 06 Jul 2026 12:06:35 GMT
+      Mon, 06 Jul 2026 12:06:35 GMT
 
     ETag
 
-    	W/"615-gB0Ew28sdFXCs1WO2cMmzxNB50s"
+      W/"615-gB0Ew28sdFXCs1WO2cMmzxNB50s"
 
     Keep-Alive
 
-    	timeout=5
+      timeout=5
 
     X-Powered-By
 
-    	Express
+      Express
 
     	
 
     Accept
 
-    	application/json, text/plain, */
-      /*
+      application/json, text/plain, */
+/*
 
-    Accept-Encoding
+Accept-Encoding
 
-    	gzip, deflate, br, zstd
+gzip, deflate, br, zstd
 
-    Accept-Language
+Accept-Language
 
-    	en-US,en;q=0.9
+en-US,en;q=0.9
 
-    Authorization
+Authorization
 
-    	Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNDc4YWU5YjQxNzlkYTU0MTZkOTRiZSIsImlhdCI6MTc4MzMzOTEwOSwiZXhwIjoxNzgzMzY3OTA5fQ.Im7RAEENNpuUiQuMbMGnGUHwAyYIo69MRf6IXk7xWJY
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNDc4YWU5YjQxNzlkYTU0MTZkOTRiZSIsImlhdCI6MTc4MzMzOTEwOSwiZXhwIjoxNzgzMzY3OTA5fQ.Im7RAEENNpuUiQuMbMGnGUHwAyYIo69MRf6IXk7xWJY
 
-    Connection
+Connection
 
-    	keep-alive
+keep-alive
 
-    Content-Length
+Content-Length
 
-    	212
+212
 
-    Content-Type
+Content-Type
 
-    	application/json
+application/json
 
-    Host
+Host
 
-    	localhost:5000
+localhost:5000
 
-    Origin
+Origin
 
-    	http://localhost:5173
+http://localhost:5173
 
-    Priority
+Priority
 
-    	u=0
+u=0
 
-    Referer
+Referer
 
-    	http://localhost:5173/
+http://localhost:5173/
 
-    Sec-Fetch-Dest
+Sec-Fetch-Dest
 
-    	empty
+empty
 
-    Sec-Fetch-Mode
+Sec-Fetch-Mode
 
-    	cors
+cors
 
-    Sec-Fetch-Site
+Sec-Fetch-Site
 
-    	same-site
+same-site
 
-    User-Agent
+User-Agent
 
-    	Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:152.0) Gecko/20100101 Firefox/152.0
+Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:152.0) Gecko/20100101 Firefox/152.0
 
 ​
 

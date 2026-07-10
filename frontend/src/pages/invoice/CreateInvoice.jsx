@@ -8,19 +8,20 @@ export default function CreateInvoice() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({
-    clientId: '',
-    invoicePrefix: '',
-    invoiceMonth: '',
-    billingMonth: '',
-    amount: '',
-    invoiceDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    poNumber: '',
-    paymentTerms: '',
-    lineItems: [],
-  });
+const [clients, setClients] = useState([]);
+const [error, setError] = useState(null);
+const [formData, setFormData] = useState({
+  clientId: user?.clientId || '',
+  invoicePrefix: '',
+  invoiceMonth: '',
+  billingMonth: '',
+  amount: '',
+  invoiceDate: new Date().toISOString().split('T')[0],
+  dueDate: '',
+  poNumber: '',
+  paymentTerms: '',
+  lineItems: [],
+});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,17 +63,26 @@ export default function CreateInvoice() {
           <form onSubmit={handleSubmit} className="bg-white border border-gray-200">
             <div className="p-8 space-y-6">
               {/* Client ID */}
+              {/* Client Dropdown */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Client ID *</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 mb-2">Client *</label>
+                <select
                   name="clientId"
                   value={formData.clientId}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter client ID"
-                />
+                  className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                >
+                  <option value="">Select a client</option>
+                  {clients.map((client) => (
+                    <option key={client._id} value={client._id}>
+                      {client.clientCode} — {client.companyName}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select by client code (e.g., CL001) for easy identification
+                </p>
               </div>
 
               {/* Invoice Prefix */}

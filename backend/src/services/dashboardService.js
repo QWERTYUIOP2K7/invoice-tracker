@@ -302,13 +302,19 @@ const getFinanceMyClients = async (userId) => {
 const getFinanceMyWorkQueue = async (userId) => {
   const user = await User.findById(userId);
   if (!user || !user.clientId) {
-    return { draft: [], pending: [], overdue: [] };
+    return { draft: [], generated: [], approved: [], pending: [], overdue: [] };
   }
 
   const clientId = user.clientId;
 
-  const [drafts, pendings, overdues] = await Promise.all([
+  const [drafts, generated, approved, pendings, overdues] = await Promise.all([
     Invoice.find({ clientId, status: 'Draft' })
+      .select('invoiceNumber amount invoiceDate')
+      .limit(10),
+    Invoice.find({ clientId, status: 'Generated' })
+      .select('invoiceNumber amount invoiceDate')
+      .limit(10),
+    Invoice.find({ clientId, status: 'Approved' })
       .select('invoiceNumber amount invoiceDate')
       .limit(10),
     Invoice.find({ clientId, status: 'Pending' })
@@ -321,6 +327,8 @@ const getFinanceMyWorkQueue = async (userId) => {
 
   return {
     draft: drafts,
+    generated: generated,
+    approved: approved,
     pending: pendings,
     overdue: overdues,
   };

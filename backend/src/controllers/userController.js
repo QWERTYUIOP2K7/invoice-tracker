@@ -1,36 +1,38 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
+const { ROLES } = require('../config/permissions');
 const Client = require('../models/Client');
 const bcrypt = require('bcryptjs');
-const { ROLES } = require('../config/permissions');
+
 
 // @route   POST /api/users
 // @access  Private/Admin
-// @desc    Create a new finance user
+// @desc    Create finance user
 exports.createUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role, clientId } = req.body;
+  const { name, email, password, clientId } = req.body;
 
-  // Validate required fields
-  if (!name || !email || !password || !role) {
+  // Validate input
+  if (!name || !email || !password || !clientId) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide name, email, password, and role',
+      message: 'Please provide all required fields',
     });
   }
 
-  // Only allow admin to create finance users
-  if (role !== ROLES.FINANCE) {
-    return res.status(400).json({
+  // Only admin can create users
+  if (req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
       success: false,
-      message: 'Only finance users can be created via this endpoint',
+      message: 'Only admins can create users',
     });
   }
 
-  // Finance users must have a clientId
-  if (!clientId) {
+  // Check if user already exists
+  let user = await User.findOne({ email });
+  if (user) {
     return res.status(400).json({
       success: false,
-      message: 'Finance users must be assigned to a client',
+      message: 'Email already in use',
     });
   }
 
@@ -43,64 +45,111 @@ exports.createUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if email already exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({
-      success: false,
-      message: 'Email already in use',
-    });
-  }
-
   // Create user
-  const user = await User.create({
+  user = await User.create({
     name,
     email,
     password,
     role: ROLES.FINANCE,
     clientId,
-    status: 'active',
   });
 
   res.status(201).json({
     success: true,
-    message: 'Finance user created successfully',
+    message: 'User created successfully',
     user: {
       id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
       clientId: user.clientId,
-      status: user.status,
     },
+  });
+});
+
+
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+// @desc    Deactivate user (soft delete)
+exports.deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const user = await User.findById(id);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  // Admin can deactivate any user (finance or client)
+  if (req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only admins can deactivate users',
+    });
+  }
+
+  // Prevent deactivating the only active admin
+  if (user.role === ROLES.ADMIN) {
+    const activeAdmins = await User.countDocuments({
+      role: ROLES.ADMIN,
+      status: 'active',
+      _id: { $ne: id }, // Exclude this user
+    });
+
+    if (activeAdmins === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot deactivate the last active admin user',
+      });
+    }
+  }
+
+  // Soft delete - set status to inactive
+  user.status = 'inactive';
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: `${user.role} user deactivated successfully`,
   });
 });
 
 // @route   GET /api/users
 // @access  Private/Admin
-// @desc    Get all finance users
-exports.getAllUsers = asyncHandler(async (req, res) => {
-  const { status, clientId, search } = req.query;
+// @desc    Get all users (finance and clients)
+exports.getUsers = asyncHandler(async (req, res) => {
+  const { search, status, role } = req.query;
 
-  let query = { role: ROLES.FINANCE }; // Only fetch finance users
-
-  if (status) {
-    query.status = status;
+  // Only admin can view all users
+  if (req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only admins can view all users',
+    });
   }
 
-  if (clientId) {
-    query.clientId = clientId;
+  // Build filter
+  const filter = {};
+  
+  if (status) {
+    filter.status = status;
+  }
+
+  if (role) {
+    filter.role = role;
   }
 
   if (search) {
-    query.$or = [
+    filter.$or = [
       { name: { $regex: search, $options: 'i' } },
       { email: { $regex: search, $options: 'i' } },
     ];
   }
 
-  const users = await User.find(query)
-    .populate('clientId', 'clientCode companyName location')
+  const users = await User.find(filter)
+    .populate('clientId', 'clientCode companyName')
     .select('-password')
     .sort({ createdAt: -1 });
 
@@ -113,24 +162,25 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
 
 // @route   GET /api/users/:id
 // @access  Private/Admin
-// @desc    Get single user by ID
+// @desc    Get single user
 exports.getUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id)
-    .populate('clientId', 'clientCode companyName location')
+  const { id } = req.params;
+
+  if (req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only admins can view user details',
+    });
+  }
+
+  const user = await User.findById(id)
+    .populate('clientId', 'clientCode companyName')
     .select('-password');
 
   if (!user) {
     return res.status(404).json({
       success: false,
       message: 'User not found',
-    });
-  }
-
-  // Only allow fetching finance users
-  if (user.role !== ROLES.FINANCE) {
-    return res.status(403).json({
-      success: false,
-      message: 'Can only view finance users',
     });
   }
 
@@ -142,10 +192,19 @@ exports.getUser = asyncHandler(async (req, res) => {
 
 // @route   PUT /api/users/:id
 // @access  Private/Admin
-// @desc    Update finance user
+// @desc    Update user
 exports.updateUser = asyncHandler(async (req, res) => {
-  let user = await User.findById(req.params.id);
+  const { id } = req.params;
+  const { name, email } = req.body;
 
+  if (req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only admins can update users',
+    });
+  }
+
+  const user = await User.findById(id);
   if (!user) {
     return res.status(404).json({
       success: false,
@@ -153,43 +212,22 @@ exports.updateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Only allow updating finance users
-  if (user.role !== ROLES.FINANCE) {
-    return res.status(403).json({
-      success: false,
-      message: 'Can only update finance users',
+  // Update allowed fields
+  if (name) user.name = name;
+  if (email) {
+    // Check email uniqueness
+    const existingUser = await User.findOne({
+      email,
+      _id: { $ne: id },
     });
-  }
-
-  const { name, email, clientId, status } = req.body;
-
-  // Check if email is being changed and if it already exists
-  if (email && email !== user.email) {
-    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
         message: 'Email already in use',
       });
     }
+    user.email = email;
   }
-
-  // Verify new clientId exists if being changed
-  if (clientId && clientId !== user.clientId.toString()) {
-    const client = await Client.findById(clientId);
-    if (!client) {
-      return res.status(404).json({
-        success: false,
-        message: 'Client not found',
-      });
-    }
-  }
-
-  // Update fields
-  if (name) user.name = name;
-  if (email) user.email = email;
-  if (clientId) user.clientId = clientId;
-  if (status) user.status = status;
 
   await user.save();
 
@@ -201,58 +239,33 @@ exports.updateUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      clientId: user.clientId,
       status: user.status,
     },
   });
 });
 
-// @route   DELETE /api/users/:id
-// @access  Private/Admin
-// @desc    Delete/Deactivate finance user
-exports.deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: 'User not found',
-    });
-  }
-
-  // Only allow deleting finance users
-  if (user.role !== ROLES.FINANCE) {
-    return res.status(403).json({
-      success: false,
-      message: 'Can only delete finance users',
-    });
-  }
-
-  // Soft delete - mark as inactive
-  user.status = 'inactive';
-  await user.save();
-
-  res.status(200).json({
-    success: true,
-    message: 'User deactivated successfully',
-  });
-});
-
 // @route   PUT /api/users/:id/reset-password
 // @access  Private/Admin
-// @desc    Reset finance user password
+// @desc    Reset user password
 exports.resetPassword = asyncHandler(async (req, res) => {
-  const { newPassword } = req.body;
+  const { id } = req.params;
+  const { password } = req.body;
 
-  if (!newPassword) {
+  if (!password) {
     return res.status(400).json({
       success: false,
       message: 'Please provide a new password',
     });
   }
 
-  const user = await User.findById(req.params.id);
+  if (req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only admins can reset passwords',
+    });
+  }
 
+  const user = await User.findById(id);
   if (!user) {
     return res.status(404).json({
       success: false,
@@ -260,16 +273,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // Only allow resetting password for finance users
-  if (user.role !== ROLES.FINANCE) {
-    return res.status(403).json({
-      success: false,
-      message: 'Can only reset password for finance users',
-    });
-  }
-
-  // Update password (will be hashed by pre-save hook)
-  user.password = newPassword;
+  user.password = password;
   await user.save();
 
   res.status(200).json({

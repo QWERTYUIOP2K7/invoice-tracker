@@ -110,9 +110,6 @@ export default function ClientDashboard() {
      <>
     <Navbar />
     <div className="min-h-screen bg-gray-50 p-8">
-
-    </div>
-    <div className="min-h-screen bg-gray-50 p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Invoice Dashboard</h1>

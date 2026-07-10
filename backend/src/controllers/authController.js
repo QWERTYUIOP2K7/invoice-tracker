@@ -82,26 +82,47 @@ exports.register = asyncHandler(async (req, res) => {
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate input
+  // Validate email & password
   if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide email and password',
+    });
   }
 
-  // Check for user (password is not selected by default, so we must select it explicitly)
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid email address',
+    });
+  }
+
+  // Get user
   const user = await User.findOne({ email }).select('+password');
   if (!user) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid email or password',
+    });
   }
 
   // Check if user is active
-  if (user.status === 'inactive') {
-    return res.status(401).json({ success: false, message: 'User account is inactive' });
+  if (user.status !== 'active') {
+    return res.status(401).json({
+      success: false,
+      message: 'Your account has been deactivated. Contact administrator.',
+    });
   }
 
   // Check password
   const isMatch = await user.matchPassword(password);
   if (!isMatch) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid email or password',
+    });
   }
 
   // Generate token

@@ -1,7 +1,7 @@
 const express = require('express');
 const {
   createUser,
-  getAllUsers,
+  getUsers,
   getUser,
   updateUser,
   deleteUser,
@@ -19,8 +19,7 @@ router.use(authorize('MANAGE_FINANCE_USERS'));
 // Create finance user
 router.post('/', createUser);
 
-// Get all finance users
-router.get('/', getAllUsers);
+router.get('/', getUsers);
 
 // Get single user
 router.get('/:id', getUser);
