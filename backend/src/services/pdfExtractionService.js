@@ -1,26 +1,18 @@
-const pdf = require('pdf-parse');
+// const pdf = require('pdf-parse');
 
 const extractInvoiceData = async (pdfBuffer) => {
   try {
-    console.log('Starting PDF parsing...');
-    const data = await pdf(pdfBuffer);
-    console.log('PDF parsed successfully');
-    const text = data.text;
-
-    console.log('Text length:', text.length);
-
-    const extracted = {
-      invoiceNumber: extractInvoiceNumber(text),
-      invoiceDate: extractInvoiceDate(text),
-      dueDate: extractDueDate(text),
-      amount: extractAmount(text),
-      clientName: extractClientName(text),
-      gstin: extractGSTIN(text),
-      poNumber: extractPONumber(text),
-      rawText: text,
+    console.log('PDF parsing skipped (disabled for production stability)');
+    return {
+      invoiceNumber: null,
+      invoiceDate: null,
+      dueDate: null,
+      amount: null,
+      clientName: null,
+      gstin: null,
+      poNumber: null,
+      rawText: "",
     };
-
-    return extracted;
   } catch (err) {
     console.error('PDF extraction error:', err.message);
     throw new Error(`Failed to extract from PDF: ${err.message}`);
