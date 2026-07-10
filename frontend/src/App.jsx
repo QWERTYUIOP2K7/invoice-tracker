@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ClientDashboard from './pages/client/ClientDashboard';
-import FinanceDashboard from './pages/finance/FinanceDashboard';
+import FinanceDashboard from './pages/finance/financeDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import CreateInvoice from './pages/invoice/CreateInvoice';
 import ProtectedRoute from './components/ProtectedRoute';
