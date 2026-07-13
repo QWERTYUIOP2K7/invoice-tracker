@@ -40,10 +40,8 @@ router.get('/export/excel', async (req, res) => {
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to export invoices',
-    });
+    console.error(err);
+    throw err;
   }
 });
 
