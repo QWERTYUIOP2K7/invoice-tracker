@@ -12,7 +12,7 @@ import EditInvoice from './pages/invoice/EditInvoice';
 import ClientManagement from './pages/finance/ClientManagement';
 import RemarksCenter from './pages/finance/RemarksCenter';
 import UserManagement from './pages/admin/UserManagement';
-import invoiceList from './pages/finance/invoiceList';
+import InvoiceList from './pages/finance/invoiceList';
 
 export default function App() {
   const { user } = useSelector((state) => state.auth);
@@ -62,7 +62,7 @@ export default function App() {
           path="/finance/invoices"
           element={
             <ProtectedRoute requiredRole="finance">
-              <invoiceList />
+              <InvoiceList />
             </ProtectedRoute>
           }
         />
