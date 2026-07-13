@@ -38,4 +38,28 @@ router.put('/:id/status', authorize('UPDATE_INVOICE_STATUS'), updateInvoiceStatu
 // Delete invoice (Finance/Admin only, Draft only)
 router.delete('/:id', authorize('UPDATE_INVOICE'), deleteInvoice);
 
+// Export invoices to Excel
+router.get('/export/excel', async (req, res) => {
+  try {
+    const invoices = await Invoice.find()
+      .populate('clientId', 'clientCode companyName')
+      .populate('createdBy', 'name')
+      .lean();
+
+    const { exportInvoicesToExcel } = require('../services/excelService');
+    const workbook = await exportInvoicesToExcel(invoices);
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="invoices.xlsx"');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export invoices',
+    });
+  }
+});
+
 module.exports = router;

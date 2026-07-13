@@ -98,6 +98,12 @@ export default function FinanceDashboard() {
             >
               + Create Invoice
             </button>
+            <button
+              onClick={() => navigate('/finance/invoices')}
+              className="px-6 py-2 bg-indigo-600 text-white hover:bg-indigo-700"
+            >
+              All Invoices
+            </button>
           </div>
         </div>
 
@@ -106,8 +112,8 @@ export default function FinanceDashboard() {
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-6 py-3 font-medium border-b-2 transition ${activeTab === 'overview'
-                ? 'text-blue-600 border-blue-600'
-                : 'text-gray-600 border-transparent hover:text-gray-900'
+              ? 'text-blue-600 border-blue-600'
+              : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
           >
             Overview
@@ -115,8 +121,8 @@ export default function FinanceDashboard() {
           <button
             onClick={() => setActiveTab('queue')}
             className={`px-6 py-3 font-medium border-b-2 transition ${activeTab === 'queue'
-                ? 'text-blue-600 border-blue-600'
-                : 'text-gray-600 border-transparent hover:text-gray-900'
+              ? 'text-blue-600 border-blue-600'
+              : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
           >
             Work Queue
