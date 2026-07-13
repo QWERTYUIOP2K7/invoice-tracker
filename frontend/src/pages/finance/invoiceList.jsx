@@ -83,8 +83,7 @@ export default function InvoiceList() {
     setExporting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/invoices/export/excel', {
-        headers: { Authorization: `Bearer ${token}` },
+const response = await fetch(`${import.meta.env.VITE_API_URL}/invoices/export/excel`, {        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) throw new Error('Export failed');
