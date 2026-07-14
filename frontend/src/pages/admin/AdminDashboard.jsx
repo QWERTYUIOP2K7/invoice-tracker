@@ -87,6 +87,32 @@ export default function AdminDashboard() {
               >
                 Manage Users
               </button>
+              <div className="flex justify-between items-center mb-8">
+  <div>
+    <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+    <p className="text-gray-600 mt-2">System Overview</p>
+  </div>
+  <button
+    onClick={async () => {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/invoices/export/excel', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    }}
+    className="px-6 py-2 bg-green-600 text-white hover:bg-green-700"
+  >
+    Export list to Excel
+  </button>
+</div>
             </div>
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>

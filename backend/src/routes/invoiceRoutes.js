@@ -24,7 +24,7 @@ router.post('/', authorize('CREATE_INVOICE'), createInvoice);
 router.get('/', scopeToClient, getInvoices);
 
 // Export invoices to Excel
-router.get('/export/excel', async (req, res) => {
+router.get('/export/excel', protect, async (req, res) => {
   try {
     const invoices = await Invoice.find()
       .populate('clientId', 'clientCode companyName')
@@ -40,8 +40,10 @@ router.get('/export/excel', async (req, res) => {
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {
-    console.error(err);
-    throw err;
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export invoices',
+    });
   }
 });
 
