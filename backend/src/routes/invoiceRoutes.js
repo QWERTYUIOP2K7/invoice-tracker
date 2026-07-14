@@ -26,33 +26,29 @@ router.get('/', scopeToClient, getInvoices);
 // Export invoices to Excel
 router.get('/export/excel', protect, async (req, res) => {
   try {
-    console.log('Starting Excel export...');
-    
+    console.log('Excel export started for user:', req.user.id);
+
     const invoices = await Invoice.find()
       .populate('clientId', 'clientCode companyName')
       .populate('createdBy', 'name')
-      .lean();
+      .lean()
+      .exec();
 
-    console.log(`Found ${invoices.length} invoices`);
+    console.log(`Found ${invoices.length} invoices to export`);
 
     const { exportInvoicesToExcel } = require('../services/excelService');
-    console.log('ExcelService loaded');
-    
     const workbook = await exportInvoicesToExcel(invoices);
-    console.log('Workbook created');
 
-    // Set correct headers for Excel file
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="invoices.xlsx"');
+    res.setHeader('Content-Disposition', `attachment; filename="invoices_${new Date().toISOString().split('T')[0]}.xlsx"`);
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
-    console.log('Headers set, writing workbook...');
     await workbook.xlsx.write(res);
-    console.log('Export complete');
     res.end();
   } catch (err) {
-    console.error('Excel export error:', err.message);
-    console.error('Stack:', err.stack);
+    console.error('Excel export error:', err.message, err.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to export invoices: ' + err.message,

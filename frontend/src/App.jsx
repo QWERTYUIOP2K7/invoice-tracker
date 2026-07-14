@@ -13,11 +13,12 @@ import ClientManagement from './pages/finance/ClientManagement';
 import RemarksCenter from './pages/finance/RemarksCenter';
 import UserManagement from './pages/admin/UserManagement';
 import InvoiceList from './pages/finance/invoiceList';
-
+import errorBoundary from './components/errorBoundary';
 export default function App() {
   const { user } = useSelector((state) => state.auth);
 
   return (
+    <errorBoundary>
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -135,5 +136,6 @@ export default function App() {
         <Route path="/admin/*" element={<div className="p-8">Admin Dashboard Coming Soon</div>} />
       </Routes>
     </Router>
+    </errorBoundary>
   );
 }
