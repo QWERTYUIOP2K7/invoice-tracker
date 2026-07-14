@@ -16,31 +16,45 @@ export default function WorkQueue({ workQueue }) {
     return badges[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const invoiceSection = (title, icon, invoices, color) => (
-    <div className={`p-6 border-b border-gray-200 last:border-b-0`}>
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">
-        {icon} {title} ({Array.isArray(invoices) ? invoices.length : 0})
-      </h3>
-      <div className="space-y-2">
-        {Array.isArray(invoices) && invoices.length > 0 ? (
-          invoices.map((invoice) => (
-            <div
-              key={String(invoice._id)}
-              onClick={() => navigate(`/invoice/detail/${invoice._id}`)}
-              className={`p-3 border cursor-pointer hover:shadow-md transition ${color}`}
-            >
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-900">{invoice.invoiceNumber}</span>
-                <span className="text-xs text-gray-600">₹{invoice.amount.toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-gray-500">No invoices</p>
-        )}
+  const renderSection = (title, icon, invoices, bgColor, borderColor) => {
+    const invoiceArray = Array.isArray(invoices) ? invoices : [];
+    
+    return (
+      <div className="p-6 border-b border-gray-200 last:border-b-0">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4">
+          {icon} {title} ({invoiceArray.length})
+        </h3>
+        <div className="space-y-2">
+          {invoiceArray.length > 0 ? (
+            invoiceArray.map((invoice) => (
+              <button
+                key={String(invoice._id)}
+                onClick={() => navigate(`/invoice/detail/${String(invoice._id)}`)}
+                className={`w-full text-left p-3 border cursor-pointer hover:shadow-md transition ${bgColor} ${borderColor}`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-900">{invoice.invoiceNumber}</span>
+                  <span className="text-xs text-gray-600">
+                    ₹{(invoice.amount || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </button>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">No invoices</p>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  if (!workQueue) {
+    return (
+      <div className="bg-white border border-gray-200 p-6">
+        <p className="text-gray-500">Loading work queue...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-gray-200">
@@ -49,54 +63,13 @@ export default function WorkQueue({ workQueue }) {
         <p className="text-sm text-gray-500 mt-1">Status by Stage</p>
       </div>
 
-      {/* Draft - Need Action */}
-      {invoiceSection(
-        'Draft',
-        workQueue?.draft,
-        'bg-gray-50 border-gray-200'
-      )}
-
-      {/* Generated - Review Needed */}
-      {invoiceSection(
-        'Generated',
-        workQueue?.generated,
-        'bg-blue-50 border-blue-200'
-      )}
-
-      {/* Approved - Ready to Send */}
-      {invoiceSection(
-        'Approved',
-        workQueue?.approved,
-        'bg-indigo-50 border-indigo-200'
-      )}
-
-      {/* Sent - Awaiting Payment */}
-      {invoiceSection(
-        'Sent',
-        workQueue?.sent,
-        'bg-purple-50 border-purple-200'
-      )}
-
-      {/* Paid - Completed */}
-      {invoiceSection(
-        'Paid',
-        workQueue?.paid,
-        'bg-green-50 border-green-200'
-      )}
-
-      {/* Pending - On Hold */}
-      {invoiceSection(
-        'Pending',
-        workQueue?.pending,
-        'bg-yellow-50 border-yellow-200'
-      )}
-
-      {/* Overdue - URGENT */}
-      {invoiceSection(
-        'Overdue',
-        workQueue?.overdue,
-        'bg-red-50 border-red-200'
-      )}
+      {renderSection('Draft', workQueue.draft, 'bg-gray-50', 'border-gray-200')}
+      {renderSection('Generated', workQueue.generated, 'bg-blue-50', 'border-blue-200')}
+      {renderSection('Approved', workQueue.approved, 'bg-indigo-50', 'border-indigo-200')}
+      {renderSection('Sent', workQueue.sent, 'bg-purple-50', 'border-purple-200')}
+      {renderSection('Paid', workQueue.paid, 'bg-green-50', 'border-green-200')}
+      {renderSection('Pending', workQueue.pending, 'bg-yellow-50', 'border-yellow-200')}
+      {renderSection('Overdue', workQueue.overdue, 'bg-red-50', 'border-red-200')}
     </div>
   );
 }
