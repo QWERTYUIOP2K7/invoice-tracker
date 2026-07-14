@@ -302,12 +302,20 @@ const getFinanceMyClients = async (userId) => {
 const getFinanceMyWorkQueue = async (userId) => {
   const user = await User.findById(userId);
   if (!user || !user.clientId) {
-    return { draft: [], generated: [], approved: [], pending: [], overdue: [] };
+    return { 
+      draft: [], 
+      generated: [], 
+      approved: [], 
+      sent: [], 
+      paid: [], 
+      pending: [], 
+      overdue: [] 
+    };
   }
 
   const clientId = user.clientId;
 
-  const [drafts, generated, approved, pendings, overdues] = await Promise.all([
+  const [drafts, generated, approved, sent, paid, pendings, overdues] = await Promise.all([
     Invoice.find({ clientId, status: 'Draft' })
       .select('invoiceNumber amount invoiceDate')
       .limit(10),
@@ -315,6 +323,12 @@ const getFinanceMyWorkQueue = async (userId) => {
       .select('invoiceNumber amount invoiceDate')
       .limit(10),
     Invoice.find({ clientId, status: 'Approved' })
+      .select('invoiceNumber amount invoiceDate')
+      .limit(10),
+    Invoice.find({ clientId, status: 'Sent' })
+      .select('invoiceNumber amount invoiceDate')
+      .limit(10),
+    Invoice.find({ clientId, status: 'Paid' })
       .select('invoiceNumber amount invoiceDate')
       .limit(10),
     Invoice.find({ clientId, status: 'Pending' })
@@ -329,6 +343,8 @@ const getFinanceMyWorkQueue = async (userId) => {
     draft: drafts,
     generated: generated,
     approved: approved,
+    sent: sent,
+    paid: paid,
     pending: pendings,
     overdue: overdues,
   };
