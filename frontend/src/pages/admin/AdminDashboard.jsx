@@ -77,6 +77,10 @@ export default function AdminDashboard() {
   return (
     <>
       <Navbar />
+      <div>
+    <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+    <p className="text-gray-600 mt-2">System Overview</p>
+  </div>
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -88,10 +92,6 @@ export default function AdminDashboard() {
                 Manage Users
               </button>
               <div className="flex justify-between items-center mb-8">
-  <div>
-    <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
-    <p className="text-gray-600 mt-2">System Overview</p>
-  </div>
   <button
     onClick={async () => {
       const token = localStorage.getItem('token');
