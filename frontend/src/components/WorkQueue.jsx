@@ -19,10 +19,10 @@ export default function WorkQueue({ workQueue }) {
   const invoiceSection = (title, icon, invoices, color) => (
     <div className={`p-6 border-b border-gray-200 last:border-b-0`}>
       <h3 className="text-sm font-semibold text-gray-700 mb-4">
-        {icon} {title} ({invoices?.length || 0})
+        {icon} {title} ({Array.isArray(invoices) ? invoices.length : 0})
       </h3>
       <div className="space-y-2">
-        {invoices && invoices.length > 0 ? (
+        {Array.isArray(invoices) && invoices.length > 0 ? (
           invoices.map((invoice) => (
             <div
               key={invoice._id}
