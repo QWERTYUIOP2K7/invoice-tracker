@@ -25,7 +25,7 @@ export default function WorkQueue({ workQueue }) {
         {Array.isArray(invoices) && invoices.length > 0 ? (
           invoices.map((invoice) => (
             <div
-              key={invoice._id}
+              key={String(invoice._id)}
               onClick={() => navigate(`/invoice/detail/${invoice._id}`)}
               className={`p-3 border cursor-pointer hover:shadow-md transition ${color}`}
             >
