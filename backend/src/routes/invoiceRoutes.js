@@ -34,15 +34,18 @@ router.get('/export/excel', protect, async (req, res) => {
     const { exportInvoicesToExcel } = require('../services/excelService');
     const workbook = await exportInvoicesToExcel(invoices);
 
+    // Set correct headers for Excel file
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="invoices.xlsx"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {
+    console.error('Excel export error:', err);
     res.status(500).json({
       success: false,
-      message: 'Failed to export invoices',
+      message: 'Failed to export invoices: ' + err.message,
     });
   }
 });

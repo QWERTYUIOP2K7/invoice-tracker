@@ -14,7 +14,6 @@ const exportInvoicesToExcel = async (invoices) => {
     { header: 'Due Date', key: 'dueDate', width: 15 },
     { header: 'Status', key: 'status', width: 15 },
     { header: 'Pending Reason', key: 'pendingReason', width: 20 },
-    { header: 'Created By', key: 'createdBy', width: 18 },
   ];
 
   // Style header row
@@ -31,7 +30,7 @@ const exportInvoicesToExcel = async (invoices) => {
   };
 
   // Add data rows
-  invoices.forEach((invoice, index) => {
+  invoices.forEach((invoice) => {
     const row = worksheet.addRow({
       invoiceNumber: invoice.invoiceNumber,
       clientName: invoice.clientId?.companyName || 'N/A',
@@ -41,7 +40,6 @@ const exportInvoicesToExcel = async (invoices) => {
       dueDate: new Date(invoice.dueDate).toLocaleDateString('en-IN'),
       status: invoice.status,
       pendingReason: invoice.pendingReason || '—',
-      createdBy: invoice.createdBy?.name || 'System',
     });
 
     // Format amount column as currency
