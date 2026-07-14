@@ -3,26 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { invoiceAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
+import { clientAPI } from '../../services/api';
 
 export default function CreateInvoice() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
-const [clients, setClients] = useState([]);
-const [error, setError] = useState(null);
-const [formData, setFormData] = useState({
-  clientId: user?.clientId || '',
-  invoicePrefix: '',
-  invoiceMonth: '',
-  billingMonth: '',
-  amount: '',
-  invoiceDate: new Date().toISOString().split('T')[0],
-  dueDate: '',
-  poNumber: '',
-  paymentTerms: '',
-  lineItems: [],
-});
+  const [clients, setClients] = useState([]);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    clientId: user?.clientId || '',
+    invoicePrefix: '',
+    invoiceMonth: '',
+    billingMonth: '',
+    amount: '',
+    invoiceDate: new Date().toISOString().split('T')[0],
+    dueDate: '',
+    poNumber: '',
+    paymentTerms: '',
+    lineItems: [],
+  });
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
+  const fetchClients = async () => {
+    try {
+      const res = await clientAPI.getClients();
+      setClients(res.data.clients || []);
+    } catch (err) {
+      console.error('Failed to load clients:', err);
+      setError('Failed to load clients');
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
