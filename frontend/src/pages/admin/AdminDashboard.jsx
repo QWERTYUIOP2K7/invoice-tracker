@@ -77,43 +77,48 @@ export default function AdminDashboard() {
   return (
     <>
       <Navbar />
-      <div>
-    <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
-    <p className="text-gray-600 mt-2">System Overview</p>
-  </div>
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex gap-4 mb-8">
-              <button
-                onClick={() => navigate('/admin/users')}
-                className="px-6 py-2 bg-purple-600 text-white hover:bg-purple-700"
-              >
-                Manage Users
-              </button>
-              <div className="flex justify-between items-center mb-8">
-  <button
-    onClick={async () => {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/invoices/export/excel', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-    }}
-    className="px-6 py-2 bg-green-600 text-white hover:bg-green-700"
-  >
-    Export list to Excel
-  </button>
-</div>
-            </div>
+            <button
+              onClick={() => navigate('/admin/users')}
+              className="px-6 py-3 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition min-w-[180px]"
+            >
+              Manage Users
+            </button>
+
+            <button
+              onClick={async () => {
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(
+                  `${import.meta.env.VITE_API_URL}/api/invoices/export/excel`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+                document.body.appendChild(link);
+                link.click();
+
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(link);
+              }}
+              className="px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition min-w-[180px]"
+            >
+              Export List to Excel
+            </button>
+          </div>
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-gray-600 mt-2">System Overview</p>
@@ -206,10 +211,10 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
-            
+
             {/* Top Clients - Expandable */}
             <div className="bg-white border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Top Clients by Outstanding</h2>
+              <h2 className="text-xl font-bold text-gray-900">Top Clients by Outstanding</h2>
               <div className="divide-y divide-gray-200">
                 {topClients.length === 0 ? (
                   <div className="p-6 text-center text-gray-500">No clients</div>
