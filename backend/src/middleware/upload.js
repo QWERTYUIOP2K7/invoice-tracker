@@ -3,7 +3,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinary');
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: {
     folder: 'invoice-tracker/pdfs',
     resource_type: 'auto',
@@ -12,19 +12,28 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({
-  storage: storage,
+  storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const allowedMimes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+    ];
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF and images allowed.'));
+      cb(new Error('Only PDF, JPG and PNG files are allowed'));
     }
   },
 });
 
+// Middleware used by routes
+const uploadPDF = upload.single('file');
 
-module.exports = { uploadPDF };
+module.exports = {
+  uploadPDF,
+};
