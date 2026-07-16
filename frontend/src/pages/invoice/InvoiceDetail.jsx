@@ -84,8 +84,12 @@ export default function InvoiceDetail() {
   const handleDownloadPDF = async () => {
   if (!invoice?.pdfUrl) return;
   try {
+    console.log(invoice.pdfUrl);
     // Cloudinary URLs are public - fetch directly
     const response = await fetch(invoice.pdfUrl);
+      if (!response.ok) {
+      throw new Error("Failed to download PDF");
+    }
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
