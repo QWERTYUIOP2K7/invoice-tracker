@@ -82,10 +82,10 @@ const invoiceSchema = new mongoose.Schema(
       type: String,
       // Delivery note reference
     },
-    
+
     // Line items (flexible - can use this OR direct amount)
     lineItems: [lineItemSchema],
-    
+
     // Total amount (calculated from lineItems or entered directly)
     amount: {
       type: Number,
@@ -113,6 +113,18 @@ const invoiceSchema = new mongoose.Schema(
     pdfUrl: {
       type: String,
       // Path or URL to the PDF file
+    },
+    receiptUrl: {
+      type: String,
+    },
+
+    receiptUploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
+    receiptUploadedAt: {
+      type: Date,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

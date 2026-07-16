@@ -145,7 +145,6 @@ exports.getInvoice = asyncHandler(async (req, res) => {
   const invoice = await Invoice.findById(req.params.id)
     .populate('clientId', 'companyName contactEmail contactPhone gstin address location')
     .populate('createdBy', 'name email')
-    .populate('receiptUploadedBy', 'name email');
 
   if (!invoice) {
     return res.status(404).json({
@@ -346,7 +345,7 @@ exports.updateInvoiceStatus = asyncHandler(async (req, res) => {
 // @desc    Upload PDF to Cloudinary
 exports.uploadPDF = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  comsole.log(req.file);
+  console.log(req.file);
   if (!req.file) {
     return res.status(400).json({
       success: false,
@@ -379,7 +378,7 @@ exports.uploadPDF = asyncHandler(async (req, res) => {
   }
 
   // Save Cloudinary URL
-  invoice.pdfUrl = req.file.secure_url;
+  invoice.pdfUrl = req.file.path;
   await invoice.save();
 
   // Record in history
@@ -388,7 +387,7 @@ exports.uploadPDF = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'PDF uploaded successfully',
-    pdfUrl: req.file.secure_url,
+    pdfUrl: req.file.path,
   });
 });
 
