@@ -18,7 +18,6 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/invoices', require('./routes/invoiceRoutes'));
-app.use('/api/pdfs', require('./routes/pdfRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes')); // NEW
 app.use('/api/remarks', require('./routes/remarkRoutes'));
 
