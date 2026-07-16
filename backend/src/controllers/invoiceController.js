@@ -346,7 +346,7 @@ exports.updateInvoiceStatus = asyncHandler(async (req, res) => {
 // @desc    Upload PDF to Cloudinary
 exports.uploadPDF = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
+  comsole.log(req.file);
   if (!req.file) {
     return res.status(400).json({
       success: false,

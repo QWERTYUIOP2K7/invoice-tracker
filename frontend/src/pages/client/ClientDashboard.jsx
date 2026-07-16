@@ -55,7 +55,8 @@ export default function ClientDashboard() {
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const baseUrl = apiUrl.replace('/api', '');
-      const pdfUrl = `${baseUrl}/${invoice.pdfUrl}`; const response = await fetch(pdfUrl, {
+      const pdfUrl = `${baseUrl}/${invoice.pdfUrl}`;
+      const response = await fetch(pdfUrl, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
