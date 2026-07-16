@@ -162,29 +162,31 @@ Draft → Generated → Approved → Sent ─┬→ Paid
 - Budget issue
 - Other
 
-##  Project Structure
+```
 invoice-tracker/
 ├── backend/
 │   ├── src/
-│   │   ├── config/          # DB, env, permissions
+│   │   ├── config/          # DB, environment, permissions
 │   │   ├── controllers/     # Business logic
+│   │   ├── middleware/      # Authentication, RBAC, uploads
 │   │   ├── models/          # MongoDB schemas
-│   │   ├── middleware/      # Auth, RBAC, uploads
 │   │   ├── routes/          # API endpoints
 │   │   ├── services/        # Utilities & helpers
 │   │   └── app.js
 │   ├── server.js
 │   └── package.json
+│
 └── frontend/
-├── src/
-│   ├── components/      # Reusable UI components
-│   ├── pages/           # Page components
-│   ├── services/        # API calls
-│   ├── store/           # Redux store
-│   ├── utils/           # Helpers
-│   ├── App.jsx
-│   └── main.jsx
-└── package.json
+    ├── src/
+    │   ├── components/      # Reusable UI components
+    │   ├── pages/           # Application pages
+    │   ├── services/        # API services
+    │   ├── store/           # Redux store
+    │   ├── utils/           # Utility functions
+    │   ├── App.jsx
+    │   └── main.jsx
+    └── package.json
+```
 
 ##  API Endpoints
 
