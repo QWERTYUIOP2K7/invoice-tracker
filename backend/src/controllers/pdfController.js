@@ -1,6 +1,4 @@
 const asyncHandler = require('express-async-handler');
-const fs = require('fs');
-const path = require('path');
 const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const { recordHistory } = require('../services/historyService');
@@ -21,48 +19,45 @@ exports.uploadPDF = asyncHandler(async (req, res) => {
   const invoice = await Invoice.findById(req.params.id);
 
   if (!invoice) {
-    fs.unlinkSync(req.file.path);
     return res.status(404).json({
       success: false,
       message: 'Invoice not found',
     });
   }
 
-  // Check authorization
-  if (req.user.role !== ROLES.ADMIN && invoice.clientId.toString() !== req.user.clientId.toString()) {
-    fs.unlinkSync(req.file.path);
+  if (
+    req.user.role !== ROLES.ADMIN &&
+    invoice.clientId.toString() !== req.user.clientId.toString()
+  ) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to upload PDF for this invoice',
     });
   }
 
-  // If there's an old PDF, delete it
-  if (invoice.pdfUrl) {
-    const oldFilePath = path.join(__dirname, '../../', invoice.pdfUrl);
-    if (fs.existsSync(oldFilePath)) {
-      fs.unlinkSync(oldFilePath);
-    }
-  }
-
-  // Store relative path to PDF
-  const pdfUrl = `uploads/${req.file.filename}`;
   const oldPdfUrl = invoice.pdfUrl;
 
-  invoice.pdfUrl = pdfUrl;
+  // Cloudinary URL
+  invoice.pdfUrl = req.file.secure_url || req.file.path;
+
   await invoice.save();
 
-  // Record in history
-  const action = oldPdfUrl ? 'pdf_replaced' : 'pdf_uploaded';
-  await recordHistory(invoice._id, action, req.user.id, 'pdfUrl', oldPdfUrl, pdfUrl);
+  await recordHistory(
+    invoice._id,
+    oldPdfUrl ? 'pdf_replaced' : 'pdf_uploaded',
+    req.user.id,
+    'pdfUrl',
+    oldPdfUrl,
+    invoice.pdfUrl
+  );
 
   res.status(200).json({
     success: true,
     message: 'PDF uploaded successfully',
+    pdfUrl: invoice.pdfUrl,
     invoice,
   });
 });
-
 // @route   POST /api/pdfs/extract-preview
 // @access  Private/Finance/Admin
 // @desc    Extract and preview invoice data from PDF (before creation)
@@ -120,8 +115,10 @@ exports.downloadPDF = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check authorization
-  if (req.user.role !== ROLES.ADMIN && invoice.clientId.toString() !== req.user.clientId.toString()) {
+  if (
+    req.user.role !== ROLES.ADMIN &&
+    invoice.clientId.toString() !== req.user.clientId.toString()
+  ) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to download this PDF',
@@ -135,17 +132,9 @@ exports.downloadPDF = asyncHandler(async (req, res) => {
     });
   }
 
-  const filePath = path.join(__dirname, '../../', invoice.pdfUrl);
-
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({
-      success: false,
-      message: 'PDF file not found',
-    });
-  }
-
-  res.download(filePath, `${invoice.invoiceNumber}.pdf`);
+  return res.redirect(invoice.pdfUrl);
 });
+
 
 // @route   GET /api/pdfs/:id/view-pdf
 // @access  Private
@@ -160,8 +149,10 @@ exports.viewPDF = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check authorization
-  if (req.user.role !== ROLES.ADMIN && invoice.clientId.toString() !== req.user.clientId.toString()) {
+  if (
+    req.user.role !== ROLES.ADMIN &&
+    invoice.clientId.toString() !== req.user.clientId.toString()
+  ) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to view this PDF',
@@ -175,15 +166,5 @@ exports.viewPDF = asyncHandler(async (req, res) => {
     });
   }
 
-  const filePath = path.join(__dirname, '../../', invoice.pdfUrl);
-
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({
-      success: false,
-      message: 'PDF file not found',
-    });
-  }
-
-  res.contentType('application/pdf');
-  res.sendFile(filePath);
+  return res.redirect(invoice.pdfUrl);
 });
