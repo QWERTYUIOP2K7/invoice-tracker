@@ -120,36 +120,6 @@ const handleDownloadReceipt = async () => {
   }
 };
 
-  const handleDownloadReceipt = async () => {
-  if (!invoice?.receiptUrl) return;
-  try {
-    const token = localStorage.getItem('token');
-    const apiUrl = import.meta.env.VITE_API_URL;
-    const baseUrl = apiUrl.replace('/api', '');
-    
-    const response = await fetch(`${baseUrl}/${invoice.receiptUrl}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch receipt');
-    }
-    
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${invoice.invoiceNumber}_receipt`;
-    document.body.appendChild(link);
-    link.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(link);
-  } catch (err) {
-    console.error('Receipt download error:', err);
-    alert('Failed to download receipt: ' + err.message);
-  }
-};
-
   const handleDeleteReceipt = async () => {
     if (!window.confirm('Delete receipt?')) return;
     try {
