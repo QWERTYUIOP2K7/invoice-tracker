@@ -3,6 +3,12 @@ const { uploadPDF, downloadPDF, viewPDF } = require('../controllers/pdfControlle
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');
 const upload = require('../middleware/upload');
+router.post(
+  '/:id/upload-pdf',
+  authorize('UPLOAD_PDF'),
+  upload.single('file'),
+  uploadPDF
+);
 
 const router = express.Router({ mergeParams: true });
 

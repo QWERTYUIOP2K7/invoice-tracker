@@ -26,6 +26,5 @@ const upload = multer({
   },
 });
 
-const uploadPDF = upload.single('file');
 
 module.exports = { uploadPDF };
