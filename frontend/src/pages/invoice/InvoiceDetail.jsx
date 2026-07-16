@@ -82,50 +82,64 @@ export default function InvoiceDetail() {
   };
 
   const handleDownloadPDF = async () => {
-    if (!invoice?.pdfUrl) return;
-    try {
-      const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const baseUrl = apiUrl.replace('/api', '');
-      const response = await fetch(`${baseUrl}/${invoice.pdfUrl}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${invoice.invoiceNumber}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-    } catch (err) {
-      alert('Failed to download PDF');
+  if (!invoice?.pdfUrl) return;
+  try {
+    const token = localStorage.getItem('token');
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const baseUrl = apiUrl.replace('/api', '');
+    
+    const response = await fetch(`${baseUrl}/${invoice.pdfUrl}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch PDF');
     }
-  };
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${invoice.invoiceNumber}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error('PDF download error:', err);
+    alert('Failed to download PDF: ' + err.message);
+  }
+};
 
   const handleDownloadReceipt = async () => {
-    if (!invoice?.receiptUrl) return;
-    try {
-      const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const baseUrl = apiUrl.replace('/api', '');
-      const response = await fetch(`${baseUrl}/${invoice.receiptUrl}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${invoice.invoiceNumber}_receipt`;
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-    } catch (err) {
-      alert('Failed to download receipt');
+  if (!invoice?.receiptUrl) return;
+  try {
+    const token = localStorage.getItem('token');
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const baseUrl = apiUrl.replace('/api', '');
+    
+    const response = await fetch(`${baseUrl}/${invoice.receiptUrl}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch receipt');
     }
-  };
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${invoice.invoiceNumber}_receipt`;
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error('Receipt download error:', err);
+    alert('Failed to download receipt: ' + err.message);
+  }
+};
 
   const handleDeleteReceipt = async () => {
     if (!window.confirm('Delete receipt?')) return;
