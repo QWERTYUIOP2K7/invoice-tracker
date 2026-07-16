@@ -5,7 +5,7 @@ import KPICard from '../../components/KPICard';
 import InvoiceTable from '../../components/InvoiceTable';
 import InvoiceTimeline from '../../components/InvoiceTimeline';
 import RemarksSection from '../../components/RemarksSection';
-import {FiDollarSign, FiCheckCircle, FiClock, FiAlertCircle } from 'react-icons/fi';
+import { FiDollarSign, FiCheckCircle, FiClock, FiAlertCircle } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
 export default function ClientDashboard() {
   const { user } = useSelector((state) => state.auth);
@@ -53,8 +53,9 @@ export default function ClientDashboard() {
     }
 
     try {
-      const pdfUrl = `http://localhost:5000/${invoice.pdfUrl}`;
-      const response = await fetch(pdfUrl, {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl.replace('/api', '');
+      const pdfUrl = `${baseUrl}/${invoice.pdfUrl}`; const response = await fetch(pdfUrl, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -107,72 +108,72 @@ export default function ClientDashboard() {
   }
 
   return (
-     <>
-    <Navbar />
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">Invoice Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome, {user?.name}!</p>
-      </div>
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900">Invoice Dashboard</h1>
+          <p className="text-gray-600 mt-2">Welcome, {user?.name}!</p>
+        </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <KPICard
-          title="Total Invoices"
-          value={kpis?.totalInvoices || 0}
-          icon={<FiDollarSign size={24} />}
-          color="blue"
-        />
-        <KPICard
-          title="Paid"
-          value={kpis?.paidInvoices || 0}
-          icon={<FiCheckCircle size={24} />}
-          color="green"
-        />
-        <KPICard
-          title="Pending"
-          value={kpis?.pendingInvoices || 0}
-          icon={<FiClock size={24} />}
-          color="yellow"
-        />
-        <KPICard
-          title="Overdue"
-          value={kpis?.overdueInvoices || 0}
-          icon={<FiAlertCircle size={24} />}
-          color="red"
-        />
-        <KPICard
-          title="Outstanding"
-          value={kpis?.outstandingAmount || 0}
-          icon={<FiDollarSign size={24} />}
-          color="purple"
-        />
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Invoice Table */}
-        <div className="lg:col-span-2">
-          <InvoiceTable
-            invoices={invoices}
-            selectedInvoice={selectedInvoice}
-            onSelectInvoice={setSelectedInvoice}  
-            onDownloadPDF={handleDownloadPDF}
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <KPICard
+            title="Total Invoices"
+            value={kpis?.totalInvoices || 0}
+            icon={<FiDollarSign size={24} />}
+            color="blue"
+          />
+          <KPICard
+            title="Paid"
+            value={kpis?.paidInvoices || 0}
+            icon={<FiCheckCircle size={24} />}
+            color="green"
+          />
+          <KPICard
+            title="Pending"
+            value={kpis?.pendingInvoices || 0}
+            icon={<FiClock size={24} />}
+            color="yellow"
+          />
+          <KPICard
+            title="Overdue"
+            value={kpis?.overdueInvoices || 0}
+            icon={<FiAlertCircle size={24} />}
+            color="red"
+          />
+          <KPICard
+            title="Outstanding"
+            value={kpis?.outstandingAmount || 0}
+            icon={<FiDollarSign size={24} />}
+            color="purple"
           />
         </div>
 
-        {/* Right Column - Timeline and Remarks */}
-        <div className="space-y-8">
-          {selectedInvoice && (
-            <>
-              <InvoiceTimeline invoice={selectedInvoice} />
-              <RemarksSection invoice={selectedInvoice} />
-            </>
-          )}
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Invoice Table */}
+          <div className="lg:col-span-2">
+            <InvoiceTable
+              invoices={invoices}
+              selectedInvoice={selectedInvoice}
+              onSelectInvoice={setSelectedInvoice}
+              onDownloadPDF={handleDownloadPDF}
+            />
+          </div>
+
+          {/* Right Column - Timeline and Remarks */}
+          <div className="space-y-8">
+            {selectedInvoice && (
+              <>
+                <InvoiceTimeline invoice={selectedInvoice} />
+                <RemarksSection invoice={selectedInvoice} />
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  </>
-);
+    </>
+  );
 }
