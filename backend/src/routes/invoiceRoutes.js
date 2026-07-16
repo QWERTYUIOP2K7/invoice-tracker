@@ -71,6 +71,98 @@ router.put('/:id/status', authorize('UPDATE_INVOICE_STATUS'), updateInvoiceStatu
 // Delete invoice (Finance/Admin only, Draft only)
 router.delete('/:id', authorize('UPDATE_INVOICE'), deleteInvoice);
 
+// Download PDF - just redirect to Cloudinary URL
+router.get('/:id/download-pdf', protect, async (req, res) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    
+    if (!invoice || !invoice.pdfUrl) {
+      return res.status(404).json({
+        success: false,
+        message: 'PDF not found',
+      });
+    }
 
+    // Cloudinary URLs are publicly accessible
+    // Frontend can fetch directly or we redirect
+    res.status(200).json({
+      success: true,
+      pdfUrl: invoice.pdfUrl,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get PDF: ' + err.message,
+    });
+  }
+});
+
+// View PDF - redirect to Cloudinary
+router.get('/:id/view-pdf', protect, async (req, res) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    
+    if (!invoice || !invoice.pdfUrl) {
+      return res.status(404).json({
+        success: false,
+        message: 'PDF not found',
+      });
+    }
+
+    res.redirect(invoice.pdfUrl);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to view PDF',
+    });
+  }
+});
+
+router.post('/:id/upload-receipt', protect, uploadPDF, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please upload a receipt file',
+      });
+    }
+
+    const invoice = await Invoice.findById(id);
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invoice not found',
+      });
+    }
+
+    // Only allow if Paid
+    if (invoice.status !== 'Paid') {
+      return res.status(400).json({
+        success: false,
+        message: 'Receipt can only be uploaded for Paid invoices',
+      });
+    }
+
+    // Save Cloudinary URL
+    invoice.receiptUrl = req.file.secure_url;
+    invoice.receiptUploadedBy = req.user.id;
+    invoice.receiptUploadedAt = new Date();
+
+    await invoice.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Receipt uploaded successfully',
+      invoice,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload receipt: ' + err.message,
+    });
+  }
+});
 
 module.exports = router;

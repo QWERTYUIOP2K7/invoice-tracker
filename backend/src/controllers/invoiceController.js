@@ -144,7 +144,8 @@ exports.getInvoices = asyncHandler(async (req, res) => {
 exports.getInvoice = asyncHandler(async (req, res) => {
   const invoice = await Invoice.findById(req.params.id)
     .populate('clientId', 'companyName contactEmail contactPhone gstin address location')
-    .populate('createdBy', 'name email');
+    .populate('createdBy', 'name email')
+    .populate('receiptUploadedBy', 'name email');
 
   if (!invoice) {
     return res.status(404).json({
@@ -337,6 +338,220 @@ exports.updateInvoiceStatus = asyncHandler(async (req, res) => {
     success: true,
     message: 'Invoice status updated successfully',
     invoice,
+  });
+});
+
+// @route   POST /api/invoices/:id/upload-pdf
+// @access  Private/Finance/Admin
+// @desc    Upload PDF to Cloudinary
+exports.uploadPDF = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please upload a PDF file',
+    });
+  }
+
+  const invoice = await Invoice.findById(id);
+  if (!invoice) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invoice not found',
+    });
+  }
+
+  // Only finance and admin can upload
+  if (req.user.role !== ROLES.FINANCE && req.user.role !== ROLES.ADMIN) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to upload PDF',
+    });
+  }
+
+  // Check authorization - can only upload for own client
+  if (req.user.role !== ROLES.ADMIN && invoice.clientId.toString() !== req.user.clientId.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to upload PDF for this invoice',
+    });
+  }
+
+  // Save Cloudinary URL
+  invoice.pdfUrl = req.file.secure_url;
+  await invoice.save();
+
+  // Record in history
+  await recordHistory(invoice._id, 'pdf_uploaded', req.user.id);
+
+  res.status(200).json({
+    success: true,
+    message: 'PDF uploaded successfully',
+    pdfUrl: req.file.secure_url,
+  });
+});
+
+// @route   GET /api/invoices/:id/download-pdf
+// @access  Private
+// @desc    Get PDF download URL
+exports.downloadPDF = asyncHandler(async (req, res) => {
+  const invoice = await Invoice.findById(req.params.id);
+
+  if (!invoice || !invoice.pdfUrl) {
+    return res.status(404).json({
+      success: false,
+      message: 'PDF not found',
+    });
+  }
+
+  // Check authorization
+  if (req.user.role !== ROLES.ADMIN && invoice.clientId.toString() !== req.user.clientId.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to download this PDF',
+    });
+  }
+
+  // Cloudinary URL is public - send it to frontend
+  res.status(200).json({
+    success: true,
+    pdfUrl: invoice.pdfUrl,
+  });
+});
+
+// @route   GET /api/invoices/:id/view-pdf
+// @access  Private
+// @desc    View PDF (redirect to Cloudinary)
+exports.viewPDF = asyncHandler(async (req, res) => {
+  const invoice = await Invoice.findById(req.params.id);
+
+  if (!invoice || !invoice.pdfUrl) {
+    return res.status(404).json({
+      success: false,
+      message: 'PDF not found',
+    });
+  }
+
+  // Check authorization
+  if (req.user.role !== ROLES.ADMIN && invoice.clientId.toString() !== req.user.clientId.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to view this PDF',
+    });
+  }
+
+  // Redirect to Cloudinary URL
+  res.redirect(invoice.pdfUrl);
+});
+
+// @route   POST /api/invoices/:id/upload-receipt
+// @access  Private
+// @desc    Upload payment receipt to Cloudinary
+exports.uploadReceipt = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please upload a receipt file',
+    });
+  }
+
+  const invoice = await Invoice.findById(id);
+  if (!invoice) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invoice not found',
+    });
+  }
+
+  // Only allow receipt upload if invoice is Paid
+  if (invoice.status !== 'Paid') {
+    return res.status(400).json({
+      success: false,
+      message: 'Receipt can only be uploaded for Paid invoices',
+    });
+  }
+
+  // Client can only upload receipt for their own invoices
+  if (req.user.role === ROLES.CLIENT) {
+    if (invoice.clientId.toString() !== req.user.clientId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to upload receipt for this invoice',
+      });
+    }
+  }
+
+  // Finance can only upload receipt for their assigned client's invoices
+  if (req.user.role === ROLES.FINANCE) {
+    if (invoice.clientId.toString() !== req.user.clientId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to upload receipt for this invoice',
+      });
+    }
+  }
+
+  // Save Cloudinary URL
+  invoice.receiptUrl = req.file.secure_url;
+  invoice.receiptUploadedBy = req.user.id;
+  invoice.receiptUploadedAt = new Date();
+
+  await invoice.save();
+
+  // Record in history
+  await recordHistory(invoice._id, 'receipt_uploaded', req.user.id);
+
+  res.status(200).json({
+    success: true,
+    message: 'Receipt uploaded successfully',
+    invoice,
+  });
+});
+
+// @route   DELETE /api/invoices/:id/receipt
+// @access  Private/Finance/Admin
+// @desc    Delete payment receipt
+exports.deleteReceipt = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const invoice = await Invoice.findById(id);
+  if (!invoice) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invoice not found',
+    });
+  }
+
+  // Only Admin and Finance can delete receipts
+  if (req.user.role === ROLES.CLIENT) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to delete receipt',
+    });
+  }
+
+  if (!invoice.receiptUrl) {
+    return res.status(400).json({
+      success: false,
+      message: 'No receipt attached to this invoice',
+    });
+  }
+
+  invoice.receiptUrl = null;
+  invoice.receiptUploadedBy = null;
+  invoice.receiptUploadedAt = null;
+
+  await invoice.save();
+
+  // Record in history
+  await recordHistory(invoice._id, 'receipt_deleted', req.user.id);
+
+  res.status(200).json({
+    success: true,
+    message: 'Receipt deleted successfully',
   });
 });
 
