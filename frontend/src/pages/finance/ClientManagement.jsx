@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { clientAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import { FiPlus, FiEdit, FiSearch } from 'react-icons/fi';
-
+import { FiCopy, FiCheck } from 'react-icons/fi';
 export default function ClientManagement() {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
@@ -24,7 +24,7 @@ export default function ClientManagement() {
   });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
-
+  const [copiedId, setCopiedId] = useState(null);
   useEffect(() => {
     fetchClients();
   }, []);
@@ -111,6 +111,12 @@ export default function ClientManagement() {
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to deactivate client');
     }
+  };
+  const handleCopyLink = (client) => {
+    const link = `${window.location.origin}/register?clientCode=${client.clientCode}`;
+    navigator.clipboard.writeText(link);
+    setCopiedId(client._id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
@@ -340,11 +346,10 @@ export default function ClientManagement() {
                         </td>
                         <td className="px-6 py-4 text-gray-700">{client.gstin || '—'}</td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 text-xs font-medium ${
-                            client.status === 'active'
+                          <span className={`px-2 py-1 text-xs font-medium ${client.status === 'active'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                          }`}>
+                            }`}>
                             {client.status}
                           </span>
                         </td>
@@ -364,6 +369,13 @@ export default function ClientManagement() {
                               Deactivate
                             </button>
                           )}
+                          <button
+                            onClick={() => handleCopyLink(client)}
+                            className="p-2 hover:bg-purple-100 text-purple-600"
+                            title="Copy registration link"
+                          >
+                            {copiedId === client._id ? <FiCheck size={18} /> : <FiCopy size={18} />}
+                          </button>
                         </td>
                       </tr>
                     ))

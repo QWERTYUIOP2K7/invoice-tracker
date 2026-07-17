@@ -34,6 +34,11 @@ exports.createClient = asyncHandler(async (req, res) => {
     status: 'active',
   });
 
+  // Generate registration link
+  const registrationLink = `${process.env.FRONTEND_URL}/register?clientCode=${client.clientCode}`;
+  client.registrationLink = registrationLink;
+  await client.save();
+
   res.status(201).json({
     success: true,
     message: 'Client created successfully',
