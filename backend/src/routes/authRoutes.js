@@ -4,6 +4,7 @@ const {
   login,
   getMe,
   registerClient,
+  registerFinance,
 } = require('../controllers/authController');
 const router = express.Router();
 router.post('/register-client', registerClient);
