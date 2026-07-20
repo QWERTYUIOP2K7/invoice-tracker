@@ -5,6 +5,8 @@ const {
   getUser,
   updateUser,
   deleteUser,
+  approveUser,
+  rejectUser,
   resetPassword,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
@@ -27,6 +29,8 @@ router.get('/:id', getUser);
 // Update user
 router.put('/:id', updateUser);
 
+router.put('/:id/approve', authorize('MANAGE_USERS'), approveUser);
+router.put('/:id/reject', authorize('MANAGE_USERS'), rejectUser);
 // Reset password
 router.put('/:id/reset-password', resetPassword);
 

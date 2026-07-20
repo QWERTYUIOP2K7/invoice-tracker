@@ -27,7 +27,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const message = error.response?.data?.message || '';
-      
+
       if (message.includes('deactivated')) {
         store.dispatch(setDeactivated());
       } else {
@@ -40,8 +40,10 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
-  registerClient: (name, email, password, clientCode) => 
+  registerClient: (name, email, password, clientCode) =>
     api.post('/auth/register-client', { name, email, password, clientCode }),
+  registerFinance: (name, email, password, confirmPassword) =>
+    api.post('/auth/register-finance', { name, email, password, confirmPassword }),
   getMe: () => api.get('/auth/me'),
 };
 
@@ -95,4 +97,8 @@ export const userAPI = {
   updateUser: (id, data) => api.put(`/users/${id}`, data),
   resetPassword: (id, password) => api.put(`/users/${id}/reset-password`, { password }),
   deleteUser: (id) => api.delete(`/users/${id}`),
+  approveUser: (userId, clientId) =>
+    api.put(`/users/${userId}/approve`, { clientId }),
+  rejectUser: (userId) =>
+    api.put(`/users/${userId}/reject`),
 };

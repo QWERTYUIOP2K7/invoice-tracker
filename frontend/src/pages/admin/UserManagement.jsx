@@ -47,7 +47,25 @@ export default function UserManagement() {
       alert(err.response?.data?.message || 'Failed to deactivate user');
     }
   };
+  const handleApproveUser = async (userId) => {
+    const clientId = prompt('Enter Client ID to assign (or leave empty):');
+    try {
+      await userAPI.approveUser(userId, clientId || null);
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to approve user');
+    }
+  };
 
+  const handleRejectUser = async (userId) => {
+    if (!window.confirm('Reject this user registration?')) return;
+    try {
+      await userAPI.rejectUser(userId);
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to reject user');
+    }
+  };
   const getRoleBadge = (role) => {
     const colors = {
       admin: 'bg-purple-100 text-purple-800',
@@ -180,11 +198,10 @@ export default function UserManagement() {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 text-xs font-medium ${
-                            user.status === 'active'
+                          <span className={`px-2 py-1 text-xs font-medium ${user.status === 'active'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                          }`}>
+                            }`}>
                             {user.status}
                           </span>
                         </td>
@@ -199,6 +216,22 @@ export default function UserManagement() {
                             </button>
                           )}
                         </td>
+                        {user.status === 'pending_approval' && (
+                          <>
+                            <button
+                              onClick={() => handleApproveUser(user._id)}
+                              className="px-3 py-1 text-xs bg-green-100 text-green-700 hover:bg-green-200"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectUser(user._id)}
+                              className="px-3 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
                       </tr>
                     ))
                   )}

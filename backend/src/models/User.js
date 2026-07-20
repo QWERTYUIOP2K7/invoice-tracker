@@ -45,9 +45,13 @@ const userSchema = new mongoose.Schema(
       enum: ['active', 'inactive'],
       default: 'active',
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
     },
   },
   { timestamps: true }

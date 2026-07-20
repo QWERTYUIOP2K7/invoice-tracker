@@ -67,6 +67,100 @@ exports.createUser = asyncHandler(async (req, res) => {
   });
 });
 
+// @route   PUT /api/users/:id/approve
+// @access  Private/Admin
+// @desc    Approve pending finance user
+exports.approveUser = asyncHandler(async (req, res) => {
+  const { clientId } = req.body;
+
+  // Only admin can approve
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to approve users',
+    });
+  }
+
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  // Can only approve pending users
+  if (user.status !== 'pending_approval') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not pending approval',
+    });
+  }
+
+  // Assign client if provided
+  if (clientId) {
+    const Client = require('../models/Client');
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client not found',
+      });
+    }
+    user.clientId = clientId;
+  }
+
+  // Approve user
+  user.status = 'active';
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'User approved successfully',
+    user,
+  });
+});
+
+// @route   PUT /api/users/:id/reject
+// @access  Private/Admin
+// @desc    Reject pending finance user
+exports.rejectUser = asyncHandler(async (req, res) => {
+  const { reason } = req.body;
+
+  // Only admin can reject
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to reject users',
+    });
+  }
+
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  // Can only reject pending users
+  if (user.status !== 'pending_approval') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not pending approval',
+    });
+  }
+
+  // Reject by deactivating
+  user.status = 'inactive';
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'User rejected',
+    user,
+  });
+});
 
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
