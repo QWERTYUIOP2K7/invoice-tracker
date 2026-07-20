@@ -70,14 +70,25 @@ exports.createUser = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/:id/approve
 // @access  Private/Admin
 // @desc    Approve pending finance user
+// @route   PUT /api/users/:id/approve
+// @access  Private/Admin
+// @desc    Approve pending finance user
 exports.approveUser = asyncHandler(async (req, res) => {
   const { clientId } = req.body;
+
+  // Check if user is authenticated
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authenticated',
+    });
+  }
 
   // Only admin can approve
   if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Not authorized to approve users',
+      message: `Not authorized. Your role is: ${req.user.role}`,
     });
   }
 
@@ -127,11 +138,19 @@ exports.approveUser = asyncHandler(async (req, res) => {
 exports.rejectUser = asyncHandler(async (req, res) => {
   const { reason } = req.body;
 
+  // Check if user is authenticated
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authenticated',
+    });
+  }
+
   // Only admin can reject
   if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Not authorized to reject users',
+      message: `Not authorized. Your role is: ${req.user.role}`,
     });
   }
 

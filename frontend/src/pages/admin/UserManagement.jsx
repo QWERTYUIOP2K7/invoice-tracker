@@ -199,8 +199,8 @@ export default function UserManagement() {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 text-xs font-medium ${user.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                             }`}>
                             {user.status}
                           </span>
@@ -217,6 +217,7 @@ export default function UserManagement() {
                           )}
                         </td>
                         {user.status === 'pending_approval' && (
+                        <td>  
                           <>
                             <button
                               onClick={() => handleApproveUser(user._id)}
@@ -231,6 +232,7 @@ export default function UserManagement() {
                               Reject
                             </button>
                           </>
+                        </td>
                         )}
                       </tr>
                     ))
