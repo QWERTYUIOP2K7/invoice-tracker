@@ -6,6 +6,7 @@ const ROLES = {
 
 const PERMISSIONS = {
   // User management (Admin only)
+  MANAGE_USERS: [ROLES.ADMIN],
   MANAGE_FINANCE_USERS: [ROLES.ADMIN],
   RESET_PASSWORD: [ROLES.ADMIN],
   
