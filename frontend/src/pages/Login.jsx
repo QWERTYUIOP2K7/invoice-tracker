@@ -20,7 +20,7 @@ export default function Login() {
     try {
       const response = await authAPI.login(email, password);
       dispatch(setUser({ user: response.data.user, token: response.data.token }));
-      
+
       // Redirect based on role
       const role = response.data.user.role;
       if (role === 'admin') navigate('/admin/dashboard');
@@ -93,7 +93,16 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
+        <p className="text-sm text-gray-600 mt-6 text-center">
+          Not registered yet?{' '}
+          <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+            Client Registration
+          </a>
+          {' '} | {' '}
+          <a href="/register-finance" className="text-blue-600 hover:text-blue-700 font-medium">
+            Finance Registration
+          </a>
+        </p>
         <p className="text-center text-gray-600 mt-6">
           Don't have an account?{' '}
           <Link to="/register" className="text-blue-600 hover:underline font-medium">
