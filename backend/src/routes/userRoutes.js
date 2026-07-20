@@ -14,27 +14,31 @@ const { authorize } = require('../middleware/rbac');
 
 const router = express.Router();
 
-// All user routes require authentication and admin role
+// All routes require authentication
 router.use(protect);
-router.use(authorize('MANAGE_FINANCE_USERS'));
 
-// Create finance user
-router.post('/', createUser);
+// Get all users (admin only)
+router.get('/', authorize('MANAGE_USERS'), getUsers);
 
-router.get('/', getUsers);
+// Get single user (admin only)
+router.get('/:id', authorize('MANAGE_USERS'), getUser);
 
-// Get single user
-router.get('/:id', getUser);
+// Create finance user (admin only)
+router.post('/', authorize('MANAGE_USERS'), createUser);
 
-// Update user
-router.put('/:id', updateUser);
+// Update user (admin only)
+router.put('/:id', authorize('MANAGE_USERS'), updateUser);
 
+// Approve pending finance user (admin only)
 router.put('/:id/approve', authorize('MANAGE_USERS'), approveUser);
-router.put('/:id/reject', authorize('MANAGE_USERS'), rejectUser);
-// Reset password
-router.put('/:id/reset-password', resetPassword);
 
-// Delete/Deactivate user
-router.delete('/:id', deleteUser);
+// Reject pending finance user (admin only)
+router.put('/:id/reject', authorize('MANAGE_USERS'), rejectUser);
+
+// Reset user password (admin only)
+router.put('/:id/reset-password', authorize('MANAGE_USERS'), resetPassword);
+
+// Delete/Deactivate user (admin only)
+router.delete('/:id', authorize('MANAGE_USERS'), deleteUser);
 
 module.exports = router;
