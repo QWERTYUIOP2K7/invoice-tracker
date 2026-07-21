@@ -230,7 +230,6 @@ exports.registerClient = asyncHandler(async (req, res) => {
     },
   });
 });
-const crypto = require('crypto');
 
 exports.registerFinance = asyncHandler(async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
