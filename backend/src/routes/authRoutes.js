@@ -5,11 +5,12 @@ const {
   getMe,
   registerClient,
   registerFinance,
+  registerAdmin
 } = require('../controllers/authController');
 const router = express.Router();
 router.post('/login', login);
 router.post('/register-client', registerClient);
 router.post('/register-finance', registerFinance);
-router.post('/register-admin', RegisterAdmin);
+router.post('/register-admin', registerAdmin);
 router.get('/me', protect, getMe);
 module.exports = router;
