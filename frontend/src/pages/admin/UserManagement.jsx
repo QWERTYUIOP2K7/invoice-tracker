@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { userAPI } from '../../services/api';
+import { userAPI, clientAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
-import { FiEdit, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('active');
-  const [selectedClients, setSelectedClients] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedClientsMap, setSelectedClientsMap] = useState({}); // Map userId to selectedClients
+
   useEffect(() => {
     fetchUsers();
+    fetchClients();
   }, []);
 
   const fetchUsers = async () => {
@@ -24,11 +27,20 @@ export default function UserManagement() {
       if (statusFilter !== 'all') params.status = statusFilter;
 
       const res = await userAPI.getUsers(params);
-      setUsers(res.data.users);
+      setUsers(res.data.users || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      const res = await clientAPI.getClients();
+      setClients(res.data.clients || []);
+    } catch (err) {
+      console.error('Failed to load clients');
     }
   };
 
@@ -47,16 +59,23 @@ export default function UserManagement() {
       alert(err.response?.data?.message || 'Failed to deactivate user');
     }
   };
+
   const handleApproveUser = async (userId) => {
-    if (selectedClients.length === 0) {
+    const selected = selectedClientsMap[userId] || [];
+    
+    if (selected.length === 0) {
       alert('Please select at least one client');
       return;
     }
 
     try {
-      await userAPI.approveUser(userId, { clientIds: selectedClients });
+      await userAPI.approveUser(userId, { clientIds: selected });
       fetchUsers();
-      setSelectedClients([]);
+      setSelectedClientsMap(prev => {
+        const updated = { ...prev };
+        delete updated[userId];
+        return updated;
+      });
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to approve user');
     }
@@ -71,6 +90,7 @@ export default function UserManagement() {
       alert(err.response?.data?.message || 'Failed to reject user');
     }
   };
+
   const getRoleBadge = (role) => {
     const colors = {
       admin: 'bg-purple-100 text-purple-800',
@@ -80,16 +100,31 @@ export default function UserManagement() {
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
 
+  const getStatusBadge = (status) => {
+    const colors = {
+      active: 'bg-green-100 text-green-800',
+      inactive: 'bg-red-100 text-red-800',
+      pending_approval: 'bg-yellow-100 text-yellow-800',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-2">Manage all system users</p>
+            <p className="text-gray-600 mt-2">Manage all system users and approve pending registrations</p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 mb-6">
+              {error}
+            </div>
+          )}
 
           {/* Filters */}
           <div className="bg-white border border-gray-200 p-6 mb-8">
@@ -136,6 +171,7 @@ export default function UserManagement() {
                     <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
+                    <option value="pending_approval">Pending Approval</option>
                   </select>
                 </div>
 
@@ -164,7 +200,7 @@ export default function UserManagement() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Role</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Client</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Assigned Clients</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
@@ -186,63 +222,80 @@ export default function UserManagement() {
                     users.map((user) => (
                       <tr key={user._id} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="px-6 py-4 font-medium text-gray-900">{user.name}</td>
-                        <td className="px-6 py-4 text-gray-700">{user.email}</td>
+                        <td className="px-6 py-4 text-gray-700 text-sm">{user.email}</td>
                         <td className="px-6 py-4">
-                          <span className={`px-3 py-1 text-xs font-medium ${getRoleBadge(user.role)}`}>
+                          <span className={`px-3 py-1 text-xs font-medium rounded ${getRoleBadge(user.role)}`}>
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {user.clientId?.companyName ? (
-                            <>
+                        <td className="px-6 py-4 text-sm">
+                          {user.assignedClients && user.assignedClients.length > 0 ? (
+                            <div className="space-y-1">
+                              {user.assignedClients.map((client, idx) => (
+                                <div key={idx} className="text-gray-700">
+                                  {client.clientCode} - {client.companyName}
+                                </div>
+                              ))}
+                            </div>
+                          ) : user.clientId ? (
+                            <div>
                               <p className="font-medium">{user.clientId.companyName}</p>
                               <p className="text-xs text-gray-500">{user.clientId.clientCode}</p>
-                            </>
+                            </div>
                           ) : (
-                            '—'
+                            <span className="text-gray-400">—</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 text-xs font-medium ${user.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                            }`}>
-                            {user.status}
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusBadge(user.status)}`}>
+                            {user.status === 'pending_approval' ? 'Pending Approval' : user.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 flex gap-2">
-                          {user.status === 'active' && (
+                        <td className="px-6 py-4">
+                          {user.status === 'pending_approval' ? (
+                            <div className="space-y-2">
+                              <select
+                                multiple
+                                value={selectedClientsMap[user._id] || []}
+                                onChange={(e) => setSelectedClientsMap(prev => ({
+                                  ...prev,
+                                  [user._id]: Array.from(e.target.selectedOptions, option => option.value)
+                                }))}
+                                className="w-full px-2 py-1 border border-gray-300 text-xs rounded"
+                              >
+                                {clients.map(client => (
+                                  <option key={client._id} value={client._id}>
+                                    {client.clientCode} - {client.companyName}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleApproveUser(user._id)}
+                                  className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-700 hover:bg-green-200 rounded"
+                                >
+                                  <FiCheck size={14} /> Approve
+                                </button>
+                                <button
+                                  onClick={() => handleRejectUser(user._id)}
+                                  className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 rounded"
+                                >
+                                  <FiX size={14} /> Reject
+                                </button>
+                              </div>
+                            </div>
+                          ) : user.status === 'active' ? (
                             <button
                               onClick={() => handleDeactivate(user._id, user.name)}
-                              className="p-2 hover:bg-red-100 text-red-600"
+                              className="p-2 hover:bg-red-100 text-red-600 rounded"
                               title="Deactivate"
                             >
                               <FiTrash2 size={16} />
                             </button>
+                          ) : (
+                            <span className="text-gray-400">—</span>
                           )}
                         </td>
-                        {user.status === 'pending_approval' && (
-                          <div className="flex gap-2">
-                            <select
-                              multiple
-                              value={selectedClients}
-                              onChange={(e) => setSelectedClients(Array.from(e.target.selectedOptions, option => option.value))}
-                              className="px-2 py-1 border border-gray-300 text-xs"
-                            >
-                              {clients.map(client => (
-                                <option key={client._id} value={client._id}>
-                                  {client.clientCode} - {client.companyName}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={() => handleApproveUser(user._id)}
-                              className="px-3 py-1 text-xs bg-green-100 text-green-700 hover:bg-green-200"
-                            >
-                              Approve
-                            </button>
-                          </div>
-                        )}
                       </tr>
                     ))
                   )}
