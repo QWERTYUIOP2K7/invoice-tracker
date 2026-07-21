@@ -10,7 +10,7 @@ export default function UserManagement() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('active');
-
+  const [selectedClients, setSelectedClients] = useState([]);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -48,10 +48,15 @@ export default function UserManagement() {
     }
   };
   const handleApproveUser = async (userId) => {
-    const clientId = prompt('Enter Client ID to assign (or leave empty):');
+    if (selectedClients.length === 0) {
+      alert('Please select at least one client');
+      return;
+    }
+
     try {
-      await userAPI.approveUser(userId, clientId || null);
+      await userAPI.approveUser(userId, { clientIds: selectedClients });
       fetchUsers();
+      setSelectedClients([]);
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to approve user');
     }
@@ -131,6 +136,7 @@ export default function UserManagement() {
                     <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
+                    <option value="pending_approval">Approval/Rejection Pending</option>
                   </select>
                 </div>
 
@@ -217,22 +223,26 @@ export default function UserManagement() {
                           )}
                         </td>
                         {user.status === 'pending_approval' && (
-                        <td>  
-                          <>
+                          <div className="flex gap-2">
+                            <select
+                              multiple
+                              value={selectedClients}
+                              onChange={(e) => setSelectedClients(Array.from(e.target.selectedOptions, option => option.value))}
+                              className="px-2 py-1 border border-gray-300 text-xs"
+                            >
+                              {clients.map(client => (
+                                <option key={client._id} value={client._id}>
+                                  {client.clientCode} - {client.companyName}
+                                </option>
+                              ))}
+                            </select>
                             <button
                               onClick={() => handleApproveUser(user._id)}
                               className="px-3 py-1 text-xs bg-green-100 text-green-700 hover:bg-green-200"
                             >
                               Approve
                             </button>
-                            <button
-                              onClick={() => handleRejectUser(user._id)}
-                              className="px-3 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        </td>
+                          </div>
                         )}
                       </tr>
                     ))

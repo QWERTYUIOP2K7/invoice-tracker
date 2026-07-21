@@ -3,7 +3,7 @@ const User = require('../models/User');
 const Client = require('../models/Client');
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/env');
-
+const crypto = require('crypto');
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, jwtSecret, {
@@ -81,7 +81,80 @@ exports.login = asyncHandler(async (req, res) => {
     },
   });
 });
+// @route   POST /api/auth/register-admin
+// @access  Public (first time only)
+// @desc    Register first admin user
+exports.registerAdmin = asyncHandler(async (req, res) => {
+  const { name, email, password, confirmPassword, adminSecret } = req.body;
 
+  // Check if admin already exists
+  const adminExists = await User.findOne({ role: 'admin' });
+  if (adminExists && adminSecret !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin already exists. Invalid secret.',
+    });
+  }
+
+  if (!name || !email || !password || !confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide all required fields',
+    });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid email address',
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must be at least 6 characters',
+    });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Passwords do not match',
+    });
+  }
+
+  let user = await User.findOne({ email });
+  if (user) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email already registered',
+    });
+  }
+
+  user = await User.create({
+    name: name.trim(),
+    email: email.trim(),
+    password,
+    role: 'admin',
+    status: 'active',
+  });
+
+  const token = generateToken(user._id);
+
+  res.status(201).json({
+    success: true,
+    message: 'Admin account created successfully',
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  });
+});
 // @route   POST /api/auth/register-client
 // @access  Public
 // @desc    Register a new client user
@@ -157,13 +230,11 @@ exports.registerClient = asyncHandler(async (req, res) => {
     },
   });
 });
-// @route   POST /api/auth/register-finance
-// @access  Public
-// @desc    Self-register as finance user (pending admin approval)
+const crypto = require('crypto');
+
 exports.registerFinance = asyncHandler(async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
 
-  // Validate input
   if (!name || !email || !password || !confirmPassword) {
     return res.status(400).json({
       success: false,
@@ -171,7 +242,6 @@ exports.registerFinance = asyncHandler(async (req, res) => {
     });
   }
 
-  // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({
@@ -180,7 +250,6 @@ exports.registerFinance = asyncHandler(async (req, res) => {
     });
   }
 
-  // Validate password
   if (password.length < 6) {
     return res.status(400).json({
       success: false,
@@ -188,7 +257,6 @@ exports.registerFinance = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check passwords match
   if (password !== confirmPassword) {
     return res.status(400).json({
       success: false,
@@ -196,7 +264,6 @@ exports.registerFinance = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if email already exists
   let user = await User.findOne({ email });
   if (user) {
     return res.status(400).json({
@@ -205,13 +272,18 @@ exports.registerFinance = asyncHandler(async (req, res) => {
     });
   }
 
-  // Create finance user with pending_approval status
+  // Generate invite code (FIN001, FIN002, etc)
+  const lastUser = await User.findOne({ role: 'finance' }).sort({ createdAt: -1 });
+  const lastNumber = lastUser?.inviteCode ? parseInt(lastUser.inviteCode.replace('FIN', '')) : 0;
+  const inviteCode = `FIN${String(lastNumber + 1).padStart(3, '0')}`;
+
   user = await User.create({
     name: name.trim(),
     email: email.trim(),
     password,
     role: 'finance',
     status: 'pending_approval',
+    inviteCode,
   });
 
   res.status(201).json({
@@ -223,6 +295,7 @@ exports.registerFinance = asyncHandler(async (req, res) => {
       email: user.email,
       role: user.role,
       status: user.status,
+      inviteCode: user.inviteCode,
     },
   });
 });

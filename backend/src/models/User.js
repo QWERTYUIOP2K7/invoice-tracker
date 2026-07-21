@@ -40,18 +40,35 @@ const userSchema = new mongoose.Schema(
         message: 'clientId is required for non-admin users',
       },
     },
+    // For clients: single clientId
+    // For finance: array of clientIds (can manage multiple clients)
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client',
+      default: null,
+    },
+    assignedClients: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client',
+    }],
     status: {
       type: String,
       enum: ['active', 'inactive', 'pending_approval'],
       default: 'active',
     },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
+    inviteCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: null,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   { timestamps: true }
@@ -77,5 +94,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 // Index for faster lookups
 userSchema.index({ email: 1 });
 userSchema.index({ clientId: 1 });
-
+userSchema.index({ inviteCode: 1 });
+userSchema.index({ assignedClients: 1 });
 module.exports = mongoose.model('User', userSchema);

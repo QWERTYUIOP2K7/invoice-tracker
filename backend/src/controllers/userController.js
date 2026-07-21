@@ -74,9 +74,8 @@ exports.createUser = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 // @desc    Approve pending finance user
 exports.approveUser = asyncHandler(async (req, res) => {
-  const { clientId } = req.body;
+  const { clientIds } = req.body; // Array of client IDs
 
-  // Check if user is authenticated
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -84,11 +83,10 @@ exports.approveUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Only admin can approve
   if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: `Not authorized. Your role is: ${req.user.role}`,
+      message: `Not authorized`,
     });
   }
 
@@ -100,7 +98,6 @@ exports.approveUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Can only approve pending users
   if (user.status !== 'pending_approval') {
     return res.status(400).json({
       success: false,
@@ -108,17 +105,20 @@ exports.approveUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Assign client if provided
-  if (clientId) {
+  // For finance users: assign multiple clients
+  if (user.role === 'finance' && clientIds && clientIds.length > 0) {
     const Client = require('../models/Client');
-    const client = await Client.findById(clientId);
-    if (!client) {
+    const clients = await Client.find({ _id: { $in: clientIds } });
+    
+    if (clients.length !== clientIds.length) {
       return res.status(404).json({
         success: false,
-        message: 'Client not found',
+        message: 'One or more clients not found',
       });
     }
-    user.clientId = clientId;
+
+    user.assignedClients = clientIds;
+    user.clientId = clientIds[0]; // Set first as primary
   }
 
   // Approve user
