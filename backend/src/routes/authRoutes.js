@@ -7,9 +7,9 @@ const {
   registerFinance,
 } = require('../controllers/authController');
 const router = express.Router();
-router.post('/register-admin', registerAdmin);
+router.post('/login', login);
 router.post('/register-client', registerClient);
 router.post('/register-finance', registerFinance);
-router.post('/login', login);
+router.post('/register-admin', registerAdmin);
 router.get('/me', protect, getMe);
 module.exports = router;
