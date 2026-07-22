@@ -16,6 +16,8 @@ import InvoiceList from './pages/finance/invoiceList';
 import errorBoundary from './components/errorBoundary';
 import RegisterFinance from './pages/RegisterFinance';
 import RegisterAdmin from './pages/RegisterAdmin';
+import FinanceUserProfile from './pages/admin/FinanceUserProfile';
+
 export default function App() {
   const { user } = useSelector((state) => state.auth);
 
@@ -89,7 +91,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route path="/admin/users/:userId" element={<FinanceUserProfile />} />
           <Route
             path="/invoice/create"
             element={

@@ -40,5 +40,5 @@ router.put('/:id/reset-password', authorize('MANAGE_USERS'), resetPassword);
 
 // Delete/Deactivate user (admin only)
 router.delete('/:id', authorize('MANAGE_USERS'), deleteUser);
-
+router.put('/:id/reactivate', authorize('MANAGE_USERS'), reactivateUser);
 module.exports = router;

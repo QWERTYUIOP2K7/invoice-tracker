@@ -180,7 +180,41 @@ exports.rejectUser = asyncHandler(async (req, res) => {
     user,
   });
 });
+// @route   PUT /api/users/:id/reactivate
+// @access  Private/Admin
+// @desc    Reactivate an inactive user
+exports.reactivateUser = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized',
+    });
+  }
 
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  if (user.status !== 'inactive') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not inactive',
+    });
+  }
+
+  user.status = 'active';
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'User reactivated successfully',
+    user,
+  });
+});
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
 // @desc    Deactivate user (soft delete)

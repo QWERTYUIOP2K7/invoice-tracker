@@ -62,7 +62,7 @@ export default function UserManagement() {
 
   const handleApproveUser = async (userId) => {
     const selected = selectedClientsMap[userId] || [];
-    
+
     if (selected.length === 0) {
       alert('Please select at least one client');
       return;
@@ -89,6 +89,9 @@ export default function UserManagement() {
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to reject user');
     }
+  };
+  const handleViewUser = (userId) => {
+    navigate(`/admin/users/${userId}`);
   };
 
   const getRoleBadge = (role) => {
@@ -294,6 +297,29 @@ export default function UserManagement() {
                             </button>
                           ) : (
                             <span className="text-gray-400">—</span>
+                          )}
+                          {user.role === 'finance' && (
+                            <button
+                              onClick={() => handleViewUser(user._id)}
+                              className="px-3 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded"
+                            >
+                              View Profile
+                            </button>
+                          )}
+                          {user.status === 'inactive' && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await userAPI.reactivateUser(user._id);
+                                  fetchUsers();
+                                } catch (err) {
+                                  alert(err.response?.data?.message || 'Failed to reactivate');
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-green-100 text-green-700 hover:bg-green-200 rounded"
+                            >
+                              Reactivate
+                            </button>
                           )}
                         </td>
                       </tr>

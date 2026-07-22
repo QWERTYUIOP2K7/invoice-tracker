@@ -39,7 +39,7 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  login: (email, password) => 
+  login: (email, password) =>
     api.post('/auth/login', { email, password }),
   registerClient: (name, email, password, clientCode) =>
     api.post('/auth/register-client', { name, email, password, clientCode }),
@@ -47,7 +47,7 @@ export const authAPI = {
     api.post('/auth/register-finance', { name, email, password, confirmPassword }),
   registerAdmin: (name, email, password, confirmPassword, adminSecret) =>
     api.post('/auth/register-admin', { name, email, password, confirmPassword, adminSecret }),
-  getMe: () => 
+  getMe: () =>
     api.get('/auth/me'),
 };
 
@@ -105,4 +105,5 @@ export const userAPI = {
     api.put(`/users/${userId}/approve`, { clientId }),
   rejectUser: (userId) =>
     api.put(`/users/${userId}/reject`),
+  reactivateUser: (id) => api.put(`/users/${id}/reactivate`),
 };
