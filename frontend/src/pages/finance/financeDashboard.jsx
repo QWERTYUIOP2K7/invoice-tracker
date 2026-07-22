@@ -7,7 +7,6 @@ import MyClientsTable from '../../components/MyClientsTable';
 import WorkQueue from '../../components/WorkQueue';
 import Navbar from '../../components/Navbar';
 import { FiDollarSign, FiCheckCircle, FiClock, FiAlertCircle, FiTrendingUp } from 'react-icons/fi';
-
 export default function FinanceDashboard() {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -17,6 +16,7 @@ export default function FinanceDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedClient, setSelectedClient] = useState('');
   useEffect(() => {
     if (user?.assignedClients && user.assignedClients.length > 0) {
       setSelectedClient(user.assignedClients[0]._id || user.assignedClients[0]);
