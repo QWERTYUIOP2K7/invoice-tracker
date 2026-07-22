@@ -87,37 +87,6 @@ export default function AdminDashboard() {
             >
               Manage Users
             </button>
-
-            <button
-              onClick={async () => {
-                const token = localStorage.getItem('token');
-
-                const response = await fetch(
-                  `${import.meta.env.VITE_API_URL}/api/invoices/export/excel`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
-                  }
-                );
-
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-                document.body.appendChild(link);
-                link.click();
-
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(link);
-              }}
-              className="px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition min-w-[180px]"
-            >
-              Export List to Excel
-            </button>
           </div>
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
