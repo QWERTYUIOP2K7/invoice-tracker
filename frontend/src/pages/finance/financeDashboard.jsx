@@ -16,9 +16,17 @@ export default function FinanceDashboard() {
   const [workQueue, setWorkQueue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' or 'queue'
-  const [selectedClient, setSelectedClient] = useState(user.assignedClients?.[0]);
-
+  const [activeTab, setActiveTab] = useState('overview');
+  useEffect(() => {
+    if (user?.assignedClients && user.assignedClients.length > 0) {
+      setSelectedClient(user.assignedClients[0]._id || user.assignedClients[0]);
+    }
+  }, [user]);
+  useEffect(() => {
+    if (selectedClient) {
+      fetchDashboardData();
+    }
+  }, [selectedClient]);
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -190,9 +198,9 @@ export default function FinanceDashboard() {
                 className="px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Client</option>
-                {user.assignedClients?.map(clientId => (
-                  <option key={clientId} value={clientId}>
-                    {clientName}
+                {user.assignedClients?.map(client => (
+                  <option key={client._id} value={client._id}>
+                    {client.clientCode} - {client.companyName}
                   </option>
                 ))}
               </select>

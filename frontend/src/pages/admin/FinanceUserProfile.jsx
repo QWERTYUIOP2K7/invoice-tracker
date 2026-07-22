@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { userAPI, clientAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import { FiArrowLeft, FiPlus, FiTrash2, FiSave } from 'react-icons/fi';
+import { formatCurrency } from '../../utils/currency';
 
 export default function FinanceUserProfile() {
   const { userId } = useParams();
@@ -67,7 +68,7 @@ export default function FinanceUserProfile() {
     try {
       await userAPI.updateUser(userId, {
         assignedClients: assignedClients.map(c => c._id),
-        clientId: assignedClients[0]._id, // Primary client
+        clientId: assignedClients[0]._id,
       });
       alert('Clients updated successfully');
       navigate('/admin/users');
@@ -116,7 +117,7 @@ export default function FinanceUserProfile() {
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <button
             onClick={() => navigate(-1)}
@@ -136,7 +137,7 @@ export default function FinanceUserProfile() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
             <p className="text-gray-600 mb-6">{user.email}</p>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Role</p>
                 <p className="font-medium text-gray-900">{user.role}</p>
@@ -166,9 +167,51 @@ export default function FinanceUserProfile() {
             </div>
           </div>
 
-          {/* Client Assignment */}
+          {/* Current Clients & Outstanding Amount */}
+          <div className="bg-white border border-gray-200 p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Assigned Clients Overview</h2>
+
+            {assignedClients.length === 0 ? (
+              <p className="text-gray-500 italic">No clients assigned</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {assignedClients.map((client) => (
+                  <div
+                    key={client._id}
+                    className="border border-gray-200 p-4 rounded-lg hover:shadow-md transition"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-semibold text-gray-900">{client.companyName}</p>
+                        <p className="text-sm text-gray-600">{client.clientCode}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Location:</span>
+                        <span className="text-gray-900 font-medium">{client.location}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Invoices:</span>
+                        <span className="text-gray-900 font-medium">{client.invoiceCount || 0}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                        <span className="text-gray-600 font-medium">Outstanding:</span>
+                        <span className="text-red-600 font-bold">
+                          {formatCurrency(client.outstandingAmount || 0)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Add/Remove Clients */}
           <div className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Assigned Clients</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Manage Clients</h2>
 
             {/* Add Client Section */}
             <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded">
