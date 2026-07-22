@@ -192,18 +192,6 @@ export default function FinanceDashboard() {
               <div className="lg:col-span-2">
                 <MyClientsTable clients={clients} />
               </div>
-              <select
-                value={selectedClient}
-                onChange={(e) => setSelectedClient(e.target.value)}
-                className="px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Client</option>
-                {user.assignedClients?.map(client => (
-                  <option key={client._id} value={client._id}>
-                    {client.clientCode} - {client.companyName}
-                  </option>
-                ))}
-              </select>
               <div>
                 {workQueue && <WorkQueue workQueue={workQueue} />}
               </div>

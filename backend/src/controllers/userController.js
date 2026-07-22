@@ -280,7 +280,7 @@ exports.getUsers = asyncHandler(async (req, res) => {
 
   // Build filter
   const filter = {};
-  
+
   if (status) {
     filter.status = status;
   }
@@ -297,7 +297,14 @@ exports.getUsers = asyncHandler(async (req, res) => {
   }
 
   const users = await User.find(filter)
-    .populate('clientId', 'clientCode companyName')
+    .populate(
+      'assignedClients',
+      'clientCode companyName location outstandingAmount invoiceCount'
+    )
+    .populate(
+      'clientId',
+      'clientCode companyName location outstandingAmount invoiceCount'
+    )
     .select('-password')
     .sort({ createdAt: -1 });
 
@@ -314,6 +321,7 @@ exports.getUsers = asyncHandler(async (req, res) => {
 exports.getUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
+  // Keep original authorization
   if (req.user.role !== ROLES.ADMIN) {
     return res.status(403).json({
       success: false,
@@ -322,7 +330,14 @@ exports.getUser = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findById(id)
-    .populate('clientId', 'clientCode companyName')
+    .populate(
+      'assignedClients',
+      'clientCode companyName location outstandingAmount invoiceCount'
+    )
+    .populate(
+      'clientId',
+      'clientCode companyName location outstandingAmount invoiceCount'
+    )
     .select('-password');
 
   if (!user) {
@@ -337,14 +352,14 @@ exports.getUser = asyncHandler(async (req, res) => {
     user,
   });
 });
-
 // @route   PUT /api/users/:id
 // @access  Private/Admin
 // @desc    Update user
 exports.updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email } = req.body;
+  const { name, email, role, clientId, assignedClients } = req.body;
 
+  // Only admin can update
   if (req.user.role !== ROLES.ADMIN) {
     return res.status(403).json({
       success: false,
@@ -352,7 +367,8 @@ exports.updateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  const user = await User.findById(id);
+  let user = await User.findById(id);
+
   if (!user) {
     return res.status(404).json({
       success: false,
@@ -362,36 +378,51 @@ exports.updateUser = asyncHandler(async (req, res) => {
 
   // Update allowed fields
   if (name) user.name = name;
+
   if (email) {
     // Check email uniqueness
     const existingUser = await User.findOne({
       email,
       _id: { $ne: id },
     });
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
         message: 'Email already in use',
       });
     }
+
     user.email = email;
+  }
+
+  // Additional fields
+  if (role) user.role = role;
+  if (clientId) user.clientId = clientId;
+
+  if (assignedClients) {
+    user.assignedClients = assignedClients;
   }
 
   await user.save();
 
+  // Populate before returning
+  user = await user.populate(
+    'assignedClients',
+    'clientCode companyName location outstandingAmount invoiceCount'
+  );
+
+  user = await user.populate(
+    'clientId',
+    'clientCode companyName location outstandingAmount invoiceCount'
+  );
+
   res.status(200).json({
     success: true,
     message: 'User updated successfully',
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-    },
+    user,
   });
 });
-
 // @route   PUT /api/users/:id/reset-password
 // @access  Private/Admin
 // @desc    Reset user password

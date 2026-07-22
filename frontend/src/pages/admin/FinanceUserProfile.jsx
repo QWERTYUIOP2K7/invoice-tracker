@@ -57,27 +57,32 @@ export default function FinanceUserProfile() {
   const handleRemoveClient = (clientId) => {
     setAssignedClients(assignedClients.filter(c => c._id !== clientId));
   };
+const handleSave = async () => {
+  if (assignedClients.length === 0) {
+    alert('At least one client must be assigned');
+    return;
+  }
 
-  const handleSave = async () => {
-    if (assignedClients.length === 0) {
-      alert('At least one client must be assigned');
-      return;
-    }
+  setSaving(true);
+  try {
+    const clientIds = assignedClients.map(c => c._id);
+    const res = await userAPI.updateUser(userId, {
+      assignedClients: clientIds,
+      clientId: clientIds[0],
+    });
 
-    setSaving(true);
-    try {
-      await userAPI.updateUser(userId, {
-        assignedClients: assignedClients.map(c => c._id),
-        clientId: assignedClients[0]._id,
-      });
-      alert('Clients updated successfully');
-      navigate('/admin/users');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update clients');
-    } finally {
-      setSaving(false);
-    }
-  };
+    // Update local state with response data
+    setAssignedClients(res.data.user.assignedClients || []);
+    
+    alert('Clients updated successfully');
+    setTimeout(() => navigate('/admin/users'), 1500);
+  } catch (err) {
+    console.error('Update error:', err);
+    setError(err.response?.data?.message || 'Failed to update clients');
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (
