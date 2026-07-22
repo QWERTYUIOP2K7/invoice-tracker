@@ -8,6 +8,7 @@ const {
   approveUser,
   rejectUser,
   resetPassword,
+  reactivateUser,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');

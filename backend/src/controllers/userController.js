@@ -215,6 +215,7 @@ exports.reactivateUser = asyncHandler(async (req, res) => {
     user,
   });
 });
+
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
 // @desc    Deactivate user (soft delete)
