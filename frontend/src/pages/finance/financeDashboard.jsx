@@ -19,7 +19,10 @@ export default function FinanceDashboard() {
   const [selectedClient, setSelectedClient] = useState('');
   useEffect(() => {
     if (user?.assignedClients && user.assignedClients.length > 0) {
-      setSelectedClient(user.assignedClients[0]._id || user.assignedClients[0]);
+      const firstClientId =
+        user.assignedClients[0]._id || user.assignedClients[0];
+
+      setSelectedClient(firstClientId);
     }
   }, [user]);
   useEffect(() => {
@@ -94,22 +97,22 @@ export default function FinanceDashboard() {
             <h1 className="text-4xl font-bold text-gray-900">Finance Dashboard</h1>
             <p className="text-gray-600 mt-2">Welcome, {user?.name}!</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <button
               onClick={() => navigate('/finance/clients')}
-              className="px-6 py-2 bg-gray-700 text-white hover:bg-gray-800"
+              className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 font-medium"
             >
               Manage Clients
             </button>
             <button
               onClick={() => navigate('/invoice/create')}
-              className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700"
+              className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 font-medium"
             >
               + Create Invoice
             </button>
             <button
               onClick={() => navigate('/finance/invoices')}
-              className="px-6 py-2 bg-indigo-600 text-white hover:bg-indigo-700"
+              className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 font-medium"
             >
               All Invoices
             </button>
@@ -147,6 +150,33 @@ export default function FinanceDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <>
+            {/* Client Selector */}
+            {user?.assignedClients?.length > 0 && (
+              <div className="bg-white border border-gray-200 p-6 mb-8 rounded">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Select Client to View
+                </label>
+
+                <select
+                  value={selectedClient}
+                  onChange={(e) => setSelectedClient(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Choose a client...</option>
+
+                  {user.assignedClients.map((client) => (
+                    <option
+                      key={client._id || client}
+                      value={client._id || client}
+                    >
+                      {client.clientCode
+                        ? `${client.clientCode} - ${client.companyName}`
+                        : client}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
               <KPICard

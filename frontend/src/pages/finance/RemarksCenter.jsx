@@ -14,9 +14,9 @@ export default function RemarksCenter() {
   const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
+ useEffect(() => {
     fetchInvoices();
-  }, []);
+}, [filter]);
 
   useEffect(() => {
     if (selectedInvoice) {
@@ -32,14 +32,17 @@ export default function RemarksCenter() {
         status: filter === 'all' ? undefined : filter,
         limit: 50,
       });
-      
+
       const filtered = res.data.invoices.filter(inv =>
         ['Pending', 'Overdue', 'Sent'].includes(inv.status)
       );
       setInvoices(filtered);
-      
+
       if (filtered.length > 0 && !selectedInvoice) {
         setSelectedInvoice(filtered[0]);
+      }
+      else if (filtered.length === 0) {
+        setSelectedInvoice(null);
       }
     } catch (err) {
       console.error('Failed to load invoices:', err);
@@ -50,27 +53,20 @@ export default function RemarksCenter() {
 
   const fetchRemarks = async () => {
     try {
-      const res = await remarkAPI.getRemarks(selectedInvoice._id);
-      setRemarks(res.data.remarks);
+      const invoiceId =
+        typeof selectedInvoice === 'string'
+          ? selectedInvoice
+          : selectedInvoice?._id;
+
+      if (!invoiceId) return;
+
+      const res = await remarkAPI.getRemarks(invoiceId);
+      setRemarks(res.data.remarks || []);
     } catch (err) {
       console.error('Failed to load remarks:', err);
     }
   };
 
-  const handleAddRemark = async () => {
-    if (!newRemark.trim() || !selectedInvoice) return;
-    setSending(true);
-
-    try {
-      const res = await remarkAPI.addRemark(selectedInvoice._id, newRemark.trim());
-      setRemarks(prev => [...prev, res.data.remark]);
-      setNewRemark('');
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to add remark');
-    } finally {
-      setSending(false);
-    }
-  };
 
   const getRoleBadgeColor = (role) => {
     const colors = {
@@ -85,8 +81,31 @@ export default function RemarksCenter() {
     return remark.addedBy?._id === user?.id || remark.addedBy?.email === user?.email;
   };
 
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!message.trim() || !selectedInvoice) return;
+
+    try {
+      await remarkAPI.addRemark(selectedInvoice, message);
+      setMessage('');
+      fetchRemarks();
+    } catch (err) {
+      alert('Failed to send message');
+    }
+  };
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </>
+    );
+  }
   return (
     <>
+
       <Navbar />
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">
@@ -104,8 +123,9 @@ export default function RemarksCenter() {
               <div className="p-4 border-b border-gray-200">
                 <select
                   value={filter}
-                  onChange={(e) => { setFilter(e.target.value); fetchInvoices(); }}
-                  className="w-full px-3 py-2 border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  onChange={(e) => {
+                    setFilter(e.target.value);
+                  }} className="w-full px-3 py-2 border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 >
                   <option value="all">All Status</option>
                   <option value="Pending">Pending</option>
@@ -125,9 +145,8 @@ export default function RemarksCenter() {
                     <button
                       key={invoice._id}
                       onClick={() => setSelectedInvoice(invoice)}
-                      className={`w-full p-4 text-left hover:bg-gray-50 transition ${
-                        selectedInvoice?._id === invoice._id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
-                      }`}
+                      className={`w-full p-4 text-left hover:bg-gray-50 transition ${selectedInvoice?._id === invoice._id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                        }`}
                     >
                       <p className="font-medium text-gray-900">{invoice.invoiceNumber}</p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -136,11 +155,10 @@ export default function RemarksCenter() {
                       <p className="text-xs text-gray-500 mt-1">
                         ₹{invoice.amount.toLocaleString('en-IN')}
                       </p>
-                      <span className={`inline-block text-xs px-2 py-1 mt-2 font-medium ${
-                        invoice.status === 'Overdue' ? 'bg-red-100 text-red-800' :
+                      <span className={`inline-block text-xs px-2 py-1 mt-2 font-medium ${invoice.status === 'Overdue' ? 'bg-red-100 text-red-800' :
                         invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
+                          'bg-purple-100 text-purple-800'
+                        }`}>
                         {invoice.status}
                       </span>
                     </button>
@@ -159,7 +177,7 @@ export default function RemarksCenter() {
                     {selectedInvoice.clientId?.companyName}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Amount: ₹{selectedInvoice.amount.toLocaleString('en-IN')} | 
+                    Amount: ₹{selectedInvoice.amount.toLocaleString('en-IN')} |
                     Due: {new Date(selectedInvoice.dueDate).toLocaleDateString('en-IN')}
                   </p>
                 </div>
@@ -177,18 +195,15 @@ export default function RemarksCenter() {
                         className={`flex ${isOwnMessage(remark) ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-3 ${
-                            isOwnMessage(remark)
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
+                          className={`max-w-xs lg:max-w-md px-4 py-3 ${isOwnMessage(remark)
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-900'
+                            }`}
                         >
-                          <div className={`flex items-center gap-2 mb-1 ${
-                            isOwnMessage(remark) ? 'justify-end' : 'justify-start'
-                          }`}>
-                            <span className={`text-xs font-medium ${
-                              isOwnMessage(remark) ? 'text-blue-100' : 'text-gray-600'
+                          <div className={`flex items-center gap-2 mb-1 ${isOwnMessage(remark) ? 'justify-end' : 'justify-start'
                             }`}>
+                            <span className={`text-xs font-medium ${isOwnMessage(remark) ? 'text-blue-100' : 'text-gray-600'
+                              }`}>
                               {remark.addedBy?.name}
                             </span>
                             <span className={`text-xs px-2 py-0.5 ${getRoleBadgeColor(remark.userRole)}`}>
@@ -196,9 +211,8 @@ export default function RemarksCenter() {
                             </span>
                           </div>
                           <p className="text-sm">{remark.message}</p>
-                          <p className={`text-xs mt-1 ${
-                            isOwnMessage(remark) ? 'text-blue-200' : 'text-gray-500'
-                          }`}>
+                          <p className={`text-xs mt-1 ${isOwnMessage(remark) ? 'text-blue-200' : 'text-gray-500'
+                            }`}>
                             {new Date(remark.createdAt).toLocaleTimeString('en-IN')}
                           </p>
                         </div>

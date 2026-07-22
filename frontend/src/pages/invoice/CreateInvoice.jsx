@@ -1,5 +1,4 @@
-import { useState, useEffect
- } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { invoiceAPI } from '../../services/api';
@@ -29,10 +28,27 @@ export default function CreateInvoice() {
   }, []);
 
   const fetchClients = async () => {
-    try {
+      try {
       const res = await clientAPI.getClients();
-      setClients(res.data.clients || []);
-    } catch (err) {
+      let availableClients = res.data.clients || [];
+
+      // If finance user, filter to only assigned clients
+      if (user?.role === 'finance' && user?.assignedClients) {
+        const assignedClientIds = user.assignedClients.map(c => c._id || c);
+        availableClients = availableClients.filter(client =>
+          assignedClientIds.includes(client._id)
+        );
+      }
+
+      setClients(availableClients);
+
+      // Auto-select first client if only one available
+      if (availableClients.length === 1) {
+        setFormData(prev => ({
+          ...prev,
+          clientId: availableClients[0]._id,
+        }));
+      }} catch (err) {
       console.error('Failed to load clients:', err);
       setError('Failed to load clients');
     }
