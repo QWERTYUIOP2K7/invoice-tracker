@@ -158,3 +158,8 @@ exports.getRemarks = asyncHandler(async (req, res) => {
     remarks,
   });
 });
+
+module.exports = {
+  getRemarks,
+  addRemark,
+};
