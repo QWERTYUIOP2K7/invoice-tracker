@@ -184,6 +184,7 @@ exports.rejectUser = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 // @desc    Reactivate an inactive user
 exports.reactivateUser = asyncHandler(async (req, res) => {
+  import { useNavigate } from "react-router-dom";
   if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,

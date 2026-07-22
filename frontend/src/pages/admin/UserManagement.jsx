@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { userAPI, clientAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import { FiSearch, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 
 export default function UserManagement() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
