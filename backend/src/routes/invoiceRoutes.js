@@ -58,38 +58,4 @@ router.delete('/:id/receipt', deleteReceipt);
 // Delete invoice (Draft only)
 router.delete('/:id', authorize('UPDATE_INVOICE'), deleteInvoice);
 
-// Export invoices to Excel
-router.get('/export/excel', async (req, res) => {
-  try {
-    console.log('Excel export started for user:', req.user.id);
-
-    const Invoice = require('../models/Invoice');
-    const invoices = await Invoice.find()
-      .populate('clientId', 'clientCode companyName')
-      .populate('createdBy', 'name')
-      .lean()
-      .exec();
-
-    console.log(`Found ${invoices.length} invoices to export`);
-
-    const { exportInvoicesToExcel } = require('../services/excelService');
-    const workbook = await exportInvoicesToExcel(invoices);
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="invoices_${new Date().toISOString().split('T')[0]}.xlsx"`);
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
-    await workbook.xlsx.write(res);
-    res.end();
-  } catch (err) {
-    console.error('Excel export error:', err.message, err.stack);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to export invoices: ' + err.message,
-    });
-  }
-});
-
 module.exports = router;

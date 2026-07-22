@@ -79,31 +79,6 @@ export default function InvoiceList() {
     return true;
   });
 
-  const handleExportExcel = async () => {
-    setExporting(true);
-    try {
-      const token = localStorage.getItem('token');
-const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices/export/excel`, {        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error('Export failed');
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-    } catch (err) {
-      alert('Failed to export Excel: ' + err.message);
-    } finally {
-      setExporting(false);
-    }
-  };
-
   const handleClearFilters = () => {
     setSearch('');
     setStatusFilter('all');
@@ -137,14 +112,6 @@ const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices/expor
               <h1 className="text-4xl font-bold text-gray-900">All Invoices</h1>
               <p className="text-gray-600 mt-2">View and manage all invoices</p>
             </div>
-            <button
-              onClick={handleExportExcel}
-              disabled={exporting || filteredInvoices.length === 0}
-              className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FiDownload size={18} />
-              {exporting ? 'Exporting...' : 'Export to Excel'}
-            </button>
           </div>
 
           {/* Filters */}
