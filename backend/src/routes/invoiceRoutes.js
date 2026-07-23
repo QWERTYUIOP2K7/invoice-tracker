@@ -12,6 +12,7 @@ const {
   deleteReceipt,
   deleteInvoice,
   getInvoiceHistory,
+  bulkUploadInvoices
 } = require('../controllers/invoiceController');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');
