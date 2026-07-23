@@ -80,10 +80,6 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">System Overview</p>
-          </div>
           <div className="flex gap-4 mb-8">
             <button
               onClick={() => navigate('/admin/users')}
@@ -92,12 +88,16 @@ export default function AdminDashboard() {
               Manage Users
             </button>
           </div>
-          <button
-            onClick={() => navigate('/admin/communication')}
-            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition"
-          >
-            All Communications
-          </button>
+             <button
+      onClick={() => navigate('/admin/communication')}
+      className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition"
+    >
+      All Communications
+    </button>
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600 mt-2">System Overview</p>
+          </div>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
