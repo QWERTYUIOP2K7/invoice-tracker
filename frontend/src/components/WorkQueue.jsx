@@ -10,7 +10,7 @@ export default function WorkQueue({ workQueue }) {
   const Section = ({ title, icon, items, color }) => (
     <div className="p-6 border-b border-gray-200 last:border-b-0">
       <h3 className="text-sm font-semibold text-gray-700 mb-4">
-        {icon} {title} ({items?.length || 0})
+        {icon} {title} [{items?.length || 0}]
       </h3>
       <div className="space-y-2">
         {items && items.length > 0 ? (
