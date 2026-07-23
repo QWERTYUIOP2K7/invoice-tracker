@@ -14,9 +14,9 @@ export default function RemarksCenter() {
   const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState('all');
 
- useEffect(() => {
+  useEffect(() => {
     fetchInvoices();
-}, [filter]);
+  }, [filter]);
 
   useEffect(() => {
     if (selectedInvoice) {
@@ -223,22 +223,25 @@ export default function RemarksCenter() {
 
                 {/* Input */}
                 <div className="p-6 border-t border-gray-200">
-                  <div className="flex gap-2">
-                    <textarea
-                      value={newRemark}
-                      onChange={(e) => setNewRemark(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 p-3 border border-gray-300 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      rows={3}
-                    />
-                    <button
-                      onClick={handleAddRemark}
-                      disabled={sending || !newRemark.trim()}
-                      className="px-4 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FiSend size={18} />
-                    </button>
-                  </div>
+                  {selectedInvoice && (
+                    <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          placeholder="Type a message..."
+                          className="flex-1 px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded"
+                        />
+                        <button
+                          type="submit"
+                          className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded font-medium"
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             ) : (
