@@ -88,12 +88,12 @@ export default function AdminDashboard() {
               Manage Users
             </button>
           </div>
-             <button
-      onClick={() => navigate('/admin/communication')}
-      className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition"
-    >
-      All Communications
-    </button>
+          <button
+            onClick={() => navigate('/admin/communication')}
+            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition"
+          >
+            All Communications
+          </button>
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-gray-600 mt-2">System Overview</p>
@@ -189,8 +189,8 @@ export default function AdminDashboard() {
 
             {/* Top Clients - Expandable */}
             <div className="bg-white border border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Top Clients by Outstanding</h2>
               <div className="divide-y divide-gray-200">
+                <h2 className="text-xl font-bold text-gray-900">Top Clients by Outstanding</h2>
                 {topClients.length === 0 ? (
                   <div className="p-6 text-center text-gray-500">No clients</div>
                 ) : (
@@ -220,55 +220,153 @@ export default function AdminDashboard() {
 
                       {/* Expanded Details */}
                       {expandedClientId === client._id && (
-                        <div className="p-6 bg-gray-50 border-t border-gray-200 space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-xs text-gray-500 mb-1">Client Code</p>
-                              <p className="font-medium text-gray-900">{client.clientCode}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 mb-1">Total Amount</p>
-                              <p className="font-medium text-gray-900">{formatCurrency(client.totalAmount)}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 mb-1">Total Invoices</p>
-                              <p className="font-medium text-gray-900">{client.invoiceCount}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 mb-1">Outstanding Amount</p>
-                              <p className="font-semibold text-red-600">{formatCurrency(client.outstandingAmount)}</p>
+                        <div className="p-6 bg-gray-50 border-t border-gray-200 space-y-6">
+                          {/* Financial Overview */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4">Financial Overview</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="bg-white p-3 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Client Code</p>
+                                <p className="font-medium text-gray-900">{client.clientCode}</p>
+                              </div>
+                              <div className="bg-white p-3 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Total Invoices</p>
+                                <p className="font-medium text-gray-900">{client.invoiceCount || 0}</p>
+                              </div>
+                              <div className="bg-white p-3 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Total Amount</p>
+                                <p className="font-medium text-gray-900">{formatCurrency(client.totalAmount || 0)}</p>
+                              </div>
+                              <div className="bg-white p-3 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Outstanding</p>
+                                <p className="font-semibold text-red-600">{formatCurrency(client.outstandingAmount || 0)}</p>
+                              </div>
                             </div>
                           </div>
 
+                          {/* Contact Information */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4">Contact Information</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Contact Email</p>
+                                <p className="font-medium text-gray-900">{client.contactEmail || 'N/A'}</p>
+                              </div>
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Contact Phone</p>
+                                <p className="font-medium text-gray-900">{client.contactPhone || 'N/A'}</p>
+                              </div>
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Location</p>
+                                <p className="font-medium text-gray-900">{client.location || 'N/A'}</p>
+                              </div>
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">Address</p>
+                                <p className="font-medium text-gray-900 text-sm">{client.address || 'N/A'}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Tax Information */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4">Tax Information</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">GSTIN</p>
+                                <p className="font-medium text-gray-900 text-sm">{client.gstin || 'N/A'}</p>
+                              </div>
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">PAN Number</p>
+                                <p className="font-medium text-gray-900 text-sm">{client.panNumber || 'N/A'}</p>
+                              </div>
+                              <div className="bg-white p-4 rounded border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1">State Code</p>
+                                <p className="font-medium text-gray-900 text-sm">{client.stateCode || 'N/A'}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Payment Status */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4">Payment Status</h4>
+                            <div className="bg-white p-4 rounded border border-gray-200">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-sm text-gray-600">Collection Rate</span>
+                                <span className="font-semibold text-gray-900">
+                                  {client.invoiceCount > 0
+                                    ? `${Math.round(
+                                      ((client.totalAmount - client.outstandingAmount) / client.totalAmount) * 100
+                                    )}%`
+                                    : '0%'}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-green-600 h-2 rounded-full transition-all"
+                                  style={{
+                                    width:
+                                      client.invoiceCount > 0
+                                        ? `${Math.round(
+                                          ((client.totalAmount - client.outstandingAmount) / client.totalAmount) * 100
+                                        )}%`
+                                        : '0%',
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="mt-3 text-xs text-gray-600">
+                                <span className="font-medium text-green-600">{formatCurrency(client.totalAmount - client.outstandingAmount || 0)}</span>
+                                {' '}collected of{' '}
+                                <span className="font-medium">{formatCurrency(client.totalAmount || 0)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Client Status */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4">Status</h4>
+                            <div className="bg-white p-4 rounded border border-gray-200">
+                              <span
+                                className={`px-3 py-1 text-sm font-medium rounded ${client.status === 'active'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                  }`}
+                              >
+                                {client.status === 'active' ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* View All Invoices */}
                           <button
                             onClick={() => navigate(`/finance/clients?search=${client.clientCode}`)}
-                            className="w-full px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 text-sm mt-4"
+                            className="w-full px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 text-sm"
                           >
                             View All Invoices
                           </button>
+
                         </div>
                       )}
                     </div>
                   ))
                 )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>   {/* divide-y */}
+            </div>     {/* Top Clients */}
+          </div>       {/* Main Grid */}
+        </div>         {/* max-w-7xl */}
+      </div>           {/* page */}
     </>
   );
 }
 
-function getStatusColor(status) {
+      function getStatusColor(status) {
   const colors = {
-    Draft: 'bg-gray-100 text-gray-800',
-    Generated: 'bg-blue-100 text-blue-800',
-    Approved: 'bg-indigo-100 text-indigo-800',
-    Sent: 'bg-purple-100 text-purple-800',
-    Paid: 'bg-green-100 text-green-800',
-    Pending: 'bg-yellow-100 text-yellow-800',
-    Overdue: 'bg-red-100 text-red-800',
+        Draft: 'bg-gray-100 text-gray-800',
+      Generated: 'bg-blue-100 text-blue-800',
+      Approved: 'bg-indigo-100 text-indigo-800',
+      Sent: 'bg-purple-100 text-purple-800',
+      Paid: 'bg-green-100 text-green-800',
+      Pending: 'bg-yellow-100 text-yellow-800',
+      Overdue: 'bg-red-100 text-red-800',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
-}
+      return colors[status] || 'bg-gray-100 text-gray-800';
+} 
