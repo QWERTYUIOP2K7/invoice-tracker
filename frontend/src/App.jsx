@@ -17,7 +17,7 @@ import errorBoundary from './components/errorBoundary';
 import RegisterFinance from './pages/RegisterFinance';
 import RegisterAdmin from './pages/RegisterAdmin';
 import FinanceUserProfile from './pages/admin/FinanceUserProfile';
-
+import CommunicationCenter from './pages/admin/CommunicationCenter';
 export default function App() {
   const { user } = useSelector((state) => state.auth);
 
@@ -83,6 +83,8 @@ export default function App() {
             }
           />
 
+          <Route path="/admin/communication" element={<CommunicationCenter /> } />
+         
           <Route
             path="/admin/users"
             element={
