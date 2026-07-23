@@ -87,6 +87,7 @@ export const invoiceAPI = {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
   deleteReceipt: (id) => api.delete(`/invoices/${id}/receipt`),
+  bulkUploadInvoices: (formData) => api.post('/invoices/bulk-upload', formData),
 };
 
 export const remarkAPI = {

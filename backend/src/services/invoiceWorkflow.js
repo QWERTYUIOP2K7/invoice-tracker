@@ -1,11 +1,11 @@
 const VALID_TRANSITIONS = {
-  Draft: ['Generated'],
-  Generated: ['Approved'],
-  Approved: ['Sent'],
-  Sent: ['Paid', 'Pending', 'Overdue'],
-  Paid: [],
-  Pending: ['Sent', 'Approved'],
-  Overdue: ['Paid', 'Pending'],
+  'Performa Invoice Generated': ['Performa Invoice Sent'],
+  'Performa Invoice Sent': ['Approved'],
+  'Approved': ['Sent'],
+  'Sent': ['Paid', 'Pending', 'Overdue'],
+  'Paid': [],
+  'Pending': ['Sent', 'Paid'],
+  'Overdue': ['Paid', 'Pending'],
 };
 
 const PENDING_REASONS = [

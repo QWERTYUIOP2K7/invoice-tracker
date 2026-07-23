@@ -58,4 +58,6 @@ router.delete('/:id/receipt', deleteReceipt);
 // Delete invoice (Draft only)
 router.delete('/:id', authorize('UPDATE_INVOICE'), deleteInvoice);
 
+router.post('/bulk-upload', protect, authorize('CREATE_INVOICE'), bulkUploadInvoices);
+
 module.exports = router;

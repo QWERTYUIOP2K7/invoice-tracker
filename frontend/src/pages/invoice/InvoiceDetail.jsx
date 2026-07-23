@@ -8,13 +8,13 @@ import { FiDownload, FiEdit, FiArrowLeft, FiUpload, FiTrash2 } from 'react-icons
 import RemarksSection from '../../components/RemarksSection';
 
 const VALID_TRANSITIONS = {
-  Draft: ['Generated'],
-  Generated: ['Approved'],
-  Approved: ['Sent'],
-  Sent: ['Paid', 'Pending', 'Overdue'],
-  Paid: [],
-  Pending: ['Sent', 'Approved'],
-  Overdue: ['Paid', 'Pending'],
+  'Performa Invoice Generated': ['Performa Invoice Sent'],
+  'Performa Invoice Sent': ['Approved'],
+  'Approved': ['Sent'],
+  'Sent': ['Paid', 'Pending', 'Overdue'],
+  'Paid': [],
+  'Pending': ['Sent', 'Paid'],
+  'Overdue': ['Paid', 'Pending'],
 };
 
 const PENDING_REASONS = [
@@ -82,47 +82,47 @@ export default function InvoiceDetail() {
   };
 
   const handleDownloadPDF = async () => {
-  if (!invoice?.pdfUrl) return;
-  try {
-    console.log(invoice.pdfUrl);
-    // Cloudinary URLs are public - fetch directly
-    const response = await fetch(invoice.pdfUrl);
+    if (!invoice?.pdfUrl) return;
+    try {
+      console.log(invoice.pdfUrl);
+      // Cloudinary URLs are public - fetch directly
+      const response = await fetch(invoice.pdfUrl);
       if (!response.ok) {
-      throw new Error("Failed to download PDF");
+        throw new Error("Failed to download PDF");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('PDF download error:', err);
+      alert('Failed to download PDF');
     }
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${invoice.invoiceNumber}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(link);
-  } catch (err) {
-    console.error('PDF download error:', err);
-    alert('Failed to download PDF');
-  }
-};
+  };
 
-const handleDownloadReceipt = async () => {
-  if (!invoice?.receiptUrl) return;
-  try {
-    const response = await fetch(invoice.receiptUrl);
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${invoice.invoiceNumber}_receipt`;
-    document.body.appendChild(link);
-    link.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(link);
-  } catch (err) {
-    console.error('Receipt download error:', err);
-    alert('Failed to download receipt');
-  }
-};
+  const handleDownloadReceipt = async () => {
+    if (!invoice?.receiptUrl) return;
+    try {
+      const response = await fetch(invoice.receiptUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${invoice.invoiceNumber}_receipt`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Receipt download error:', err);
+      alert('Failed to download receipt');
+    }
+  };
 
   const handleDeleteReceipt = async () => {
     if (!window.confirm('Delete receipt?')) return;
@@ -527,13 +527,13 @@ const handleDownloadReceipt = async () => {
 
 function getStatusColor(status) {
   const colors = {
-    Draft: 'bg-gray-100 text-gray-800',
-    Generated: 'bg-blue-100 text-blue-800',
-    Approved: 'bg-indigo-100 text-indigo-800',
-    Sent: 'bg-purple-100 text-purple-800',
-    Paid: 'bg-green-100 text-green-800',
-    Pending: 'bg-yellow-100 text-yellow-800',
-    Overdue: 'bg-red-100 text-red-800',
+    'Performa Invoice Generated': 'bg-blue-100 text-blue-800',
+    'Performa Invoice Sent': 'bg-indigo-100 text-indigo-800',
+    'Approved': 'bg-purple-100 text-purple-800',
+    'Sent': 'bg-cyan-100 text-cyan-800',
+    'Paid': 'bg-green-100 text-green-800',
+    'Pending': 'bg-yellow-100 text-yellow-800',
+    'Overdue': 'bg-red-100 text-red-800',
   };
   return colors[status] || 'bg-gray-100 text-gray-800';
 }

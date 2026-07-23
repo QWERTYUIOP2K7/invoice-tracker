@@ -145,6 +145,12 @@ export default function FinanceDashboard() {
           >
             Communication
           </button>
+          <button
+            onClick={() => navigate('/invoice/bulk-upload')}
+            className="px-6 py-3 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700"
+          >
+            Bulk Upload
+          </button>
         </div>
 
         {/* Overview Tab */}

@@ -92,11 +92,10 @@ const invoiceSchema = new mongoose.Schema(
       required: [true, 'Please provide invoice amount'],
       min: [0, 'Amount cannot be negative'],
     },
-
     status: {
       type: String,
-      enum: ['Draft', 'Generated', 'Approved', 'Sent', 'Paid', 'Pending', 'Overdue'],
-      default: 'Draft',
+      enum: ['Performa Invoice Generated', 'Performa Invoice Sent', 'Approved', 'Sent', 'Paid', 'Pending', 'Overdue'],
+      default: 'PI Generated',
     },
     pendingReason: {
       type: String,

@@ -18,6 +18,8 @@ import RegisterFinance from './pages/RegisterFinance';
 import RegisterAdmin from './pages/RegisterAdmin';
 import FinanceUserProfile from './pages/admin/FinanceUserProfile';
 import CommunicationCenter from './pages/admin/CommunicationCenter';
+import BulkUpload from './pages/invoice/bulkUpload';
+
 export default function App() {
   const { user } = useSelector((state) => state.auth);
 
@@ -83,8 +85,8 @@ export default function App() {
             }
           />
 
-          <Route path="/admin/communication" element={<CommunicationCenter /> } />
-         
+          <Route path="/admin/communication" element={<CommunicationCenter />} />
+
           <Route
             path="/admin/users"
             element={
@@ -120,7 +122,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route path="/invoice/bulk-upload" element={<BulkUpload />} />
           <Route
             path="/"
             element={

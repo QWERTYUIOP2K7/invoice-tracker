@@ -74,7 +74,7 @@ exports.createInvoice = asyncHandler(async (req, res) => {
     paymentTerms,
     deliveryNoteNumber,
     lineItems: processedLineItems,
-    status: 'Draft',
+    status: 'Performa Invoice Generated',
     createdBy: req.user.id,
   });
 
@@ -630,5 +630,68 @@ exports.getInvoiceHistory = asyncHandler(async (req, res) => {
     success: true,
     count: history.length,
     history,
+  });
+});
+
+exports.bulkUploadInvoices = asyncHandler(async (req, res) => {
+  const { invoices } = req.body;
+
+  if (!invoices || !Array.isArray(invoices)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid data format',
+    });
+  }
+
+  const { generateInvoiceNumber } = require('../services/invoiceNumberService');
+  const Client = require('../models/Client');
+  const errors = [];
+  let successCount = 0;
+
+  for (let i = 0; i < invoices.length; i++) {
+    try {
+      const inv = invoices[i];
+      const client = await Client.findOne({ clientCode: inv.clientCode });
+
+      if (!client) {
+        errors.push({
+          row: i + 2,
+          message: `Client code ${inv.clientCode} not found`,
+        });
+        continue;
+      }
+
+      const invoiceNumber = await generateInvoiceNumber(inv.invoicePrefix, client._id);
+
+      await Invoice.create({
+        invoiceNumber,
+        invoicePrefix: inv.invoicePrefix,
+        clientId: client._id,
+        invoiceMonth: inv.invoiceMonth,
+        billingMonth: inv.billingMonth,
+        amount: parseFloat(inv.amount),
+        invoiceDate: new Date(inv.invoiceDate),
+        dueDate: new Date(inv.dueDate),
+        poNumber: inv.poNumber || null,
+        paymentTerms: inv.paymentTerms || null,
+        status: 'Performa Invoice Generated',
+        createdBy: req.user.id,
+      });
+
+      successCount++;
+    } catch (err) {
+      errors.push({
+        row: i + 2,
+        message: err.message,
+      });
+    }
+  }
+
+  res.status(201).json({
+    success: true,
+    total: invoices.length,
+    success: successCount,
+    failed: errors.length,
+    errors,
   });
 });

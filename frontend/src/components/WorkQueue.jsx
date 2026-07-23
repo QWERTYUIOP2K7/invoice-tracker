@@ -10,7 +10,7 @@ export default function WorkQueue({ workQueue }) {
   const Section = ({ title, icon, items, color }) => (
     <div className="p-6 border-b border-gray-200 last:border-b-0">
       <h3 className="text-sm font-semibold text-gray-700 mb-4">
-        {icon} {title} [{items?.length || 0}]
+        {icon} {title} ({items?.length || 0})
       </h3>
       <div className="space-y-2">
         {items && items.length > 0 ? (
@@ -40,10 +40,10 @@ export default function WorkQueue({ workQueue }) {
         <p className="text-sm text-gray-500 mt-1">Status by Stage</p>
       </div>
 
-      <Section title="Performa Invoice(PI) Generated" icon="" items={workQueue.draft} color="bg-gray-50 border-gray-200" />
-      <Section title="Performa Invoice(PI) Sent" icon="" items={workQueue.generated} color="bg-blue-50 border-blue-200" />
+      <Section title="Draft" icon="" items={workQueue.draft} color="bg-gray-50 border-gray-200" />
+      <Section title="Generated" icon="" items={workQueue.generated} color="bg-blue-50 border-blue-200" />
       <Section title="Approved" icon="" items={workQueue.approved} color="bg-indigo-50 border-indigo-200" />
-      <Section title="Invoice Sent" icon="" items={workQueue.sent} color="bg-purple-50 border-purple-200" />
+      <Section title="Sent" icon="" items={workQueue.sent} color="bg-purple-50 border-purple-200" />
       <Section title="Paid" icon="" items={workQueue.paid} color="bg-green-50 border-green-200" />
       <Section title="Pending" icon="" items={workQueue.pending} color="bg-yellow-50 border-yellow-200" />
       <Section title="Overdue" icon="" items={workQueue.overdue} color="bg-red-50 border-red-200" />
