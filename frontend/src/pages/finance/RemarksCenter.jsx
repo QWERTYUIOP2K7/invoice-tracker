@@ -13,7 +13,7 @@ export default function RemarksCenter() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [filter, setFilter] = useState('all');
-
+  const [message, setMessage] = useState('');
   useEffect(() => {
     fetchInvoices();
   }, [filter]);
