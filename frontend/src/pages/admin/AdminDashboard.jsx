@@ -190,7 +190,8 @@ export default function AdminDashboard() {
             {/* Top Clients - Expandable */}
             <div className="bg-white border border-gray-200">
               <div className="divide-y divide-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Top Clients by Outstanding</h2>
+                 <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-gray-900">Top Clients by Outstanding</h2></div>
                 {topClients.length === 0 ? (
                   <div className="p-6 text-center text-gray-500">No clients</div>
                 ) : (
