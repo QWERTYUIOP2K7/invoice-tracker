@@ -9,6 +9,7 @@ import Navbar from '../../components/Navbar';
 import { FiDollarSign, FiCheckCircle, FiClock, FiAlertCircle, FiTrendingUp } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/currency';
 import { getStatusColor, STATUS_LABELS } from '../../utils/invoiceStatus';
+import { Link } from "react-router-dom";
 export default function FinanceDashboard() {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -247,50 +248,37 @@ export default function FinanceDashboard() {
 
         {/* Work Queue */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Work Queue
-          </h2>
-
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Work Queue</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {Object.entries(workQueue).map(([status, invoices]) => (
-              <div key={status} className="bg-white border border-gray-200 rounded">
+              <div key={status} className="bg-white border border-gray-200 rounded overflow-hidden">
+                {/* Status Header */}
                 <div className={`p-4 border-b border-gray-200 ${getStatusColor(status)}`}>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold">
                     {STATUS_LABELS[status]} ({invoices.length})
                   </h3>
                 </div>
 
+                {/* Invoices List */}
                 <div className="divide-y divide-gray-200 max-h-80 overflow-y-auto">
                   {invoices.length === 0 ? (
-                    <p className="p-4 text-gray-500 text-sm">
-                      No invoices
-                    </p>
+                    <p className="p-4 text-gray-500 text-sm text-center">No invoices</p>
                   ) : (
-                    invoices.map((invoice) => (
+                    invoices.map(invoice => (
                       <a
                         key={invoice._id}
-                        href={`/invoice/detail/${invoice._id}`}
+                        href={`/invoice/${invoice._id}`}
                         className="block p-4 hover:bg-gray-50 transition"
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-gray-900">
-                              {invoice.invoiceNumber}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {invoice.clientId?.companyName}
-                            </p>
+                            <p className="font-medium text-gray-900">{invoice.invoiceNumber}</p>
+                            <p className="text-sm text-gray-600">{invoice.clientId?.companyName}</p>
                           </div>
-
-                          <p className="font-semibold text-gray-900">
-                            {formatCurrency(invoice.amount)}
-                          </p>
+                          <p className="font-semibold text-gray-900">{formatCurrency(invoice.amount)}</p>
                         </div>
-
                         <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-                          <span>
-                            Due: {new Date(invoice.dueDate).toLocaleDateString('en-IN')}
-                          </span>
+                          <span>Due: {new Date(invoice.dueDate).toLocaleDateString('en-IN')}</span>
                           <span>{invoice.invoiceMonth}</span>
                         </div>
                       </a>
