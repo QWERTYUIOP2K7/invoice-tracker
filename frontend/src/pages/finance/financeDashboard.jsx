@@ -241,9 +241,6 @@ export default function FinanceDashboard() {
               <div className="lg:col-span-2">
                 <MyClientsTable clients={clients} />
               </div>
-              <div>
-                {workQueue && <WorkQueue workQueue={workQueue} />}
-              </div>
             </div>
           </>
         )}
