@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FiDownload, FiEye, FiSearch } from 'react-icons/fi';
 import { formatCurrency } from '../utils/currency';
+import { STATUS_LABELS, getStatusColor } from "../utils/invoiceStatus";
 export default function InvoiceTable({ invoices, selectedInvoice, onSelectInvoice, onDownloadPDF }) {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
