@@ -265,9 +265,9 @@ export default function FinanceDashboard() {
                     <p className="p-4 text-gray-500 text-sm text-center">No invoices</p>
                   ) : (
                     invoices.map(invoice => (
-                      <a
+                      <Link
                         key={invoice._id}
-                        href={`/invoice/${invoice._id}`}
+                        to={`/invoice/detail/${invoice._id}`}
                         className="block p-4 hover:bg-gray-50 transition"
                       >
                         <div className="flex justify-between items-start">
@@ -281,7 +281,7 @@ export default function FinanceDashboard() {
                           <span>Due: {new Date(invoice.dueDate).toLocaleDateString('en-IN')}</span>
                           <span>{invoice.invoiceMonth}</span>
                         </div>
-                      </a>
+                      </Link>
                     ))
                   )}
                 </div>
