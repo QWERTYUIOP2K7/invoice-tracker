@@ -95,7 +95,7 @@ const invoiceSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['Performa Invoice Generated', 'Performa Invoice Sent', 'Approved', 'Sent', 'Paid', 'Pending', 'Overdue'],
-      default: 'PI Generated',
+      default: 'Performa Invoice Generated',
     },
     pendingReason: {
       type: String,

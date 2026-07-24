@@ -150,8 +150,8 @@ export default function InvoiceTable({ invoices, selectedInvoice, onSelectInvoic
                   key={invoice._id}
                   onClick={() => onSelectInvoice(invoice)}
                   className={`border-b cursor-pointer transition ${selectedInvoice?._id === invoice._id
-                      ? 'bg-blue-50'
-                      : 'hover:bg-gray-50'
+                    ? 'bg-blue-50'
+                    : 'hover:bg-gray-50'
                     }`}
                 >
                   <td className="px-6 py-4 font-medium text-gray-900">
@@ -167,8 +167,8 @@ export default function InvoiceTable({ invoices, selectedInvoice, onSelectInvoic
                     {new Date(invoice.dueDate).toLocaleDateString('en-IN')}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                      {invoice.status}
+                    <span className={`px-3 py-1 text-xs font-medium rounded ${getStatusColor(invoice.status)}`}>
+                      {STATUS_LABELS[invoice.status] || invoice.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 flex gap-2">

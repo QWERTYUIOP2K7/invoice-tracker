@@ -37,6 +37,17 @@ export default function FinanceDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      const params = {
+        status: [
+          'Performa Invoice Generated',
+          'Performa Invoice Sent',
+          'Approved',
+          'Sent',
+          'Paid',
+          'Pending',
+          'Overdue',
+        ],
+      };
       const [kpiRes, clientRes, queueRes] = await Promise.all([
         dashboardAPI.getFinanceDashboard(),
         dashboardAPI.getFinanceMyClients(),

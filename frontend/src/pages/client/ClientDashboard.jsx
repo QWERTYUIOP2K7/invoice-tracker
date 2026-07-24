@@ -7,6 +7,8 @@ import InvoiceTimeline from '../../components/InvoiceTimeline';
 import RemarksSection from '../../components/RemarksSection';
 import { FiDollarSign, FiCheckCircle, FiClock, FiAlertCircle } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
+import { STATUS_LABELS, getStatusColor } from '../../../utils/invoiceStatus';
+
 export default function ClientDashboard() {
   const { user } = useSelector((state) => state.auth);
   const [kpis, setKpis] = useState(null);

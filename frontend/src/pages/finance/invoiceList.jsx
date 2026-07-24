@@ -27,6 +27,18 @@ export default function InvoiceList() {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
+      const params = {
+      limit: 1000,
+      status: [
+        'Performa Invoice Generated',
+        'Performa Invoice Sent',
+        'Approved',
+        'Sent',
+        'Paid',
+        'Pending',
+        'Overdue',
+      ],
+    };
       const res = await invoiceAPI.getInvoices({ limit: 1000 });
       setInvoices(res.data.invoices);
     } catch (err) {

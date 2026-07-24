@@ -6,17 +6,16 @@ import Navbar from '../../components/Navbar';
 import { formatCurrency } from '../../utils/currency';
 import { FiDownload, FiEdit, FiArrowLeft, FiUpload, FiTrash2 } from 'react-icons/fi';
 import RemarksSection from '../../components/RemarksSection';
-
-const VALID_TRANSITIONS = {
+import { STATUS_LABELS, getStatusColor } from '../../../utils/invoiceStatus';
+const validStatuses = {
   'Performa Invoice Generated': ['Performa Invoice Sent'],
   'Performa Invoice Sent': ['Approved'],
   'Approved': ['Sent'],
   'Sent': ['Paid', 'Pending', 'Overdue'],
   'Paid': [],
-  'Pending': ['Sent', 'Paid'],
+  'Pending': ['Sent', 'Approved'],
   'Overdue': ['Paid', 'Pending'],
 };
-
 const PENDING_REASONS = [
   'Client approval pending',
   'PO not received',
@@ -43,7 +42,7 @@ export default function InvoiceDetail() {
   const [showReceiptUpload, setShowReceiptUpload] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
-
+  const availableStatuses = validStatuses[invoice?.status] || [];
   useEffect(() => {
     fetchInvoiceDetail();
   }, [id]);
@@ -280,7 +279,7 @@ export default function InvoiceDetail() {
                   </span>
                 </div>
 
-                {VALID_TRANSITIONS[invoice.status]?.length > 0 ? (
+                {availableStatuses.length > 0 ? (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -294,12 +293,12 @@ export default function InvoiceDetail() {
                           setShowReceiptUpload(false);
                           setReceiptFile(null);
                         }}
-                        className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                        className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white rounded"
                       >
                         <option value="">Select new status</option>
-                        {VALID_TRANSITIONS[invoice.status].map((status) => (
+                        {availableStatuses.map((status) => (
                           <option key={status} value={status}>
-                            {status}
+                            {STATUS_LABELS[status] || status}
                           </option>
                         ))}
                       </select>
