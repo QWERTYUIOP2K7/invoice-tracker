@@ -122,6 +122,13 @@ export default function FinanceDashboard() {
               + Create Invoice
             </button>
             <button
+              onClick={() => navigate('/invoice/bulk-upload')}
+              className="px-6 py-3 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700"
+            >
+              Bulk Upload
+            </button>
+
+            <button
               onClick={() => navigate('/finance/invoices')}
               className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 font-medium"
             >
@@ -156,14 +163,7 @@ export default function FinanceDashboard() {
           >
             Communication
           </button>
-          <button
-            onClick={() => navigate('/invoice/bulk-upload')}
-            className="px-6 py-3 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700"
-          >
-            Bulk Upload
-          </button>
         </div>
-
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <>
@@ -246,12 +246,62 @@ export default function FinanceDashboard() {
           </>
         )}
 
-        {/* Work Queue Tab */}
-        {activeTab === 'queue' && (
-          <div className="grid grid-cols-1 gap-8">
-            {workQueue && <WorkQueue workQueue={workQueue} />}
+        {/* Work Queue */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Work Queue
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {Object.entries(workQueue).map(([status, invoices]) => (
+              <div key={status} className="bg-white border border-gray-200 rounded">
+                <div className={`p-4 border-b border-gray-200 ${getStatusColor(status)}`}>
+                  <h3 className="font-semibold text-gray-900">
+                    {STATUS_LABELS[status]} ({invoices.length})
+                  </h3>
+                </div>
+
+                <div className="divide-y divide-gray-200 max-h-80 overflow-y-auto">
+                  {invoices.length === 0 ? (
+                    <p className="p-4 text-gray-500 text-sm">
+                      No invoices
+                    </p>
+                  ) : (
+                    invoices.map((invoice) => (
+                      <a
+                        key={invoice._id}
+                        href={`/invoice/detail/${invoice._id}`}
+                        className="block p-4 hover:bg-gray-50 transition"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {invoice.invoiceNumber}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {invoice.clientId?.companyName}
+                            </p>
+                          </div>
+
+                          <p className="font-semibold text-gray-900">
+                            {formatCurrency(invoice.amount)}
+                          </p>
+                        </div>
+
+                        <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                          <span>
+                            Due: {new Date(invoice.dueDate).toLocaleDateString('en-IN')}
+                          </span>
+                          <span>{invoice.invoiceMonth}</span>
+                        </div>
+                      </a>
+                    ))
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </>
   );
