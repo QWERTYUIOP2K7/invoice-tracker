@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar';
 import { formatCurrency } from '../../utils/currency';
 import { FiDownload, FiEdit, FiArrowLeft, FiUpload, FiTrash2 } from 'react-icons/fi';
 import RemarksSection from '../../components/RemarksSection';
-import { STATUS_LABELS, getStatusColor } from '../../../utils/invoiceStatus';
+import { STATUS_LABELS, getStatusColor } from '../../utils/invoiceStatus';
 const validStatuses = {
   'Performa Invoice Generated': ['Performa Invoice Sent'],
   'Performa Invoice Sent': ['Approved'],
