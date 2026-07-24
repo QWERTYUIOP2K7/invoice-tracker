@@ -7,6 +7,7 @@ import MyClientsTable from '../../components/MyClientsTable';
 import WorkQueue from '../../components/WorkQueue';
 import Navbar from '../../components/Navbar';
 import { FiDollarSign, FiCheckCircle, FiClock, FiAlertCircle, FiTrendingUp } from 'react-icons/fi';
+import { formatCurrency } from '../../utils/currency';
 import { getStatusColor, STATUS_LABELS } from '../../utils/invoiceStatus';
 export default function FinanceDashboard() {
   const { user } = useSelector((state) => state.auth);
