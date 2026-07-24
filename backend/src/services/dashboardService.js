@@ -303,23 +303,23 @@ const getFinanceMyWorkQueue = async (userId) => {
   const user = await User.findById(userId);
   if (!user || !user.clientId) {
     return { 
-      draft: [], 
-      generated: [], 
-      approved: [], 
-      sent: [], 
-      paid: [], 
-      pending: [], 
-      overdue: [] 
+      'Performa Invoice Generated': [], 
+      'Performa Invoice sent': [], 
+      'approved': [], 
+      'sent': [], 
+      'paid': [], 
+      'pending': [], 
+      'overdue': [] 
     };
   }
 
   const clientId = user.clientId;
 
   const [drafts, generated, approved, sent, paid, pendings, overdues] = await Promise.all([
-    Invoice.find({ clientId, status: 'Draft' })
+    Invoice.find({ clientId, status: 'Performa Invoice Generated' })
       .select('invoiceNumber amount invoiceDate')
       .limit(10),
-    Invoice.find({ clientId, status: 'Generated' })
+    Invoice.find({ clientId, status: 'Performa Invoice Sent' })
       .select('invoiceNumber amount invoiceDate')
       .limit(10),
     Invoice.find({ clientId, status: 'Approved' })
@@ -340,13 +340,13 @@ const getFinanceMyWorkQueue = async (userId) => {
   ]);
 
   return {
-    draft: drafts,
-    generated: generated,
-    approved: approved,
-    sent: sent,
-    paid: paid,
-    pending: pendings,
-    overdue: overdues,
+    'Performa Invoice Generated': drafts,
+    'Performa Invoice Sent': generated,
+    'approved': approved,
+    'sent': sent,
+    'paid': paid,
+    'pending': pendings,
+    'overdue': overdues,
   };
 };
 

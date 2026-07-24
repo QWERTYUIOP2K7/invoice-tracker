@@ -40,8 +40,8 @@ export default function WorkQueue({ workQueue }) {
         <p className="text-sm text-gray-500 mt-1">Status by Stage</p>
       </div>
 
-      <Section title="Draft" icon="" items={workQueue.draft} color="bg-gray-50 border-gray-200" />
-      <Section title="Generated" icon="" items={workQueue.generated} color="bg-blue-50 border-blue-200" />
+      <Section title="Performa Invoice Generated" icon="" items={workQueue.draft} color="bg-gray-50 border-gray-200" />
+      <Section title="Performa Invoice Sent" icon="" items={workQueue.generated} color="bg-blue-50 border-blue-200" />
       <Section title="Approved" icon="" items={workQueue.approved} color="bg-indigo-50 border-indigo-200" />
       <Section title="Sent" icon="" items={workQueue.sent} color="bg-purple-50 border-purple-200" />
       <Section title="Paid" icon="" items={workQueue.paid} color="bg-green-50 border-green-200" />

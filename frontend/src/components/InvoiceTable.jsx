@@ -35,13 +35,13 @@ export default function InvoiceTable({ invoices, selectedInvoice, onSelectInvoic
 
   const getStatusColor = (status) => {
     const colors = {
-      Draft: 'bg-gray-100 text-gray-800',
-      Generated: 'bg-blue-100 text-blue-800',
-      Approved: 'bg-indigo-100 text-indigo-800',
-      Sent: 'bg-purple-100 text-purple-800',
-      Paid: 'bg-green-100 text-green-800',
-      Pending: 'bg-yellow-100 text-yellow-800',
-      Overdue: 'bg-red-100 text-red-800',
+      'Performa Invoice Generated': 'bg-gray-100 text-gray-800',
+      'Performa Invoice Sent': 'bg-blue-100 text-blue-800',
+      'Approved': 'bg-indigo-100 text-indigo-800',
+      'Sent': 'bg-purple-100 text-purple-800',
+      'Paid': 'bg-green-100 text-green-800',
+      'Pending': 'bg-yellow-100 text-yellow-800',
+      'Overdue': 'bg-red-100 text-red-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -76,8 +76,8 @@ export default function InvoiceTable({ invoices, selectedInvoice, onSelectInvoic
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
             >
               <option value="all">All Statuses</option>
-              <option value="Draft">Draft</option>
-              <option value="Generated">Generated</option>
+              <option value="Performa Invoice Generated">Performa Invoice Generated</option>
+              <option value="Performa Invoice Sent">Performa Invoice Sent</option>
               <option value="Approved">Approved</option>
               <option value="Sent">Sent</option>
               <option value="Paid">Paid</option>

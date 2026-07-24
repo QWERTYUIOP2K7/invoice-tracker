@@ -116,7 +116,7 @@ exports.getFinanceMyClients = asyncHandler(async (req, res) => {
 
 // @route   GET /api/dashboard/finance/work-queue
 // @access  Private/Finance
-// @desc    Get work queue (draft, pending, overdue)
+// @desc    Get work queue(PI Status, pending, overdue)
 exports.getFinanceWorkQueue = asyncHandler(async (req, res) => {
   const workQueue = await getFinanceMyWorkQueue(req.user.id);
 

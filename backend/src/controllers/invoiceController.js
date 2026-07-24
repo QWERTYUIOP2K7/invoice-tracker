@@ -576,7 +576,7 @@ exports.deleteInvoice = asyncHandler(async (req, res) => {
   }
 
   // Only allow deletion of Draft invoices
-  if (invoice.status !== 'Draft') {
+  if (invoice.status !== 'Performa Invoice Generated') {
     return res.status(400).json({
       success: false,
       message: 'Only Draft invoices can be deleted',

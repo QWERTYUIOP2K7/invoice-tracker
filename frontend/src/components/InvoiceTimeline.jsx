@@ -1,7 +1,7 @@
 import { FiCheck } from 'react-icons/fi';
 
 export default function InvoiceTimeline({ invoice }) {
-  const statuses = ['Draft', 'Generated', 'Approved', 'Sent', 'Paid'];
+  const statuses = ['Performa Invoice Generated', 'Performa Invoice Sent', 'Approved', 'Sent', 'Paid'];
   const currentStatusIndex = statuses.indexOf(invoice.status);
 
   return (

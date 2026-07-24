@@ -13,7 +13,7 @@ This system provides:
 
 ### Invoice Management
 - Create and manage invoices with automatic numbering
-- 7-stage workflow: Draft → Generated → Approved → Sent → Paid/Pending/Overdue
+- 7-stage workflow: Performa Invoice Generated → Performa Invoice Sent → Approved → Sent → Paid/Pending/Overdue
 - Track pending reasons and payment status
 - Persistent PDF storage via Cloudinary
 - Payment receipt upload and tracking
@@ -150,7 +150,7 @@ Visit `http://localhost:5173`
 - View outstanding amounts
 
 ##  Invoice Status Workflow
-Draft → Generated → Approved → Sent ─┬→ Paid
+PI Generated → PI sent → Approved → Sent ─┬→ Paid
 ├→ Pending (with reason) ↔ Sent/Approved
 └→ Overdue ──→ Paid/Pending
 

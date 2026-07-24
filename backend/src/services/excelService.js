@@ -51,8 +51,8 @@ const exportInvoicesToExcel = async (invoices) => {
       // Color status
       const statusCell = row.getCell('status');
       const statusColors = {
-        'Draft': 'FFC0C0C0',
-        'Generated': 'FF87CEEB',
+        'Performa Invoice Generated': 'FFC0C0C0',
+        'Performa Invoice Sent': 'FF87CEEB',
         'Approved': 'FF4169E1',
         'Sent': 'FFA9A9FF',
         'Paid': 'FF90EE90',
